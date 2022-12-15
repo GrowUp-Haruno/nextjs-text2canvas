@@ -42,9 +42,9 @@ const getPath = async (text?: string) => {
     body: JSON.stringify({ text }),
   });
 
-  if (!res.ok) {
-    throw new Error('フェッチに失敗しました');
-  }
+  // if (!res.ok) {
+  //   throw new Error('フェッチに失敗しました');
+  // }
 
   const { path } = (await res.json()) as {
     path: TPath;
