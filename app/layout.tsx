@@ -7,7 +7,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <head></head>
+      <head>
+        <title>文字-画像コンバータ  </title>
+      </head>
       <body>{children}</body>
     </html>
   );
