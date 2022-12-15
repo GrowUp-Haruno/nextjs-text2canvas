@@ -1,12 +1,14 @@
 'use client';
-import { useEffect, FC, useRef } from 'react';
+import { useEffect, FC, useRef, memo } from 'react';
 import { TPath } from './TextToCanvas';
 
 export const Canvas: FC<{
   textPath: TPath | null;
-}> = ({ textPath }) => {
+  isLoading: boolean;
+}> = memo(({ textPath, isLoading }) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
+  console.log('再レンダリング');
 
   useEffect(() => {
     if (canvas.current === null) return;
@@ -24,7 +26,6 @@ export const Canvas: FC<{
     if (canvas.current === null) return;
     if (canvasCtx.current === null) return;
     if (textPath === null) return;
-
     canvasCtx.current.clearRect(
       0,
       0,
@@ -34,8 +35,16 @@ export const Canvas: FC<{
     pathDraw({ ctx: canvasCtx.current, path: textPath });
   }, [textPath]);
 
-  return <canvas ref={canvas} />;
-};
+  return (
+    <div>
+      {isLoading && <p>通信中...</p>}
+      <canvas
+        ref={canvas}
+        style={{ display: isLoading ? 'none' : undefined }}
+      />
+    </div>
+  );
+});
 
 const pathDraw = ({
   ctx,
