@@ -35,7 +35,7 @@ export const useTextToCanvas = () => {
 
 const getPath = async (text?: string) => {
   const res = await fetch(`/api/text2path`, {
-    method: 'post',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },

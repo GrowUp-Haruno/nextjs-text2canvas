@@ -11,6 +11,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  console.log(req.method);
+  console.log(req.body);
+
   if (req.method !== 'POST') return res.status(500);
 
   const MAX_TEXT_LENGTH = 20;
