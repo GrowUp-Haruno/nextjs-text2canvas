@@ -8,7 +8,6 @@ export const Canvas: FC<{
 }> = memo(({ textPath, isLoading }) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
-  console.log('再レンダリング');
 
   useEffect(() => {
     if (canvas.current === null) return;
