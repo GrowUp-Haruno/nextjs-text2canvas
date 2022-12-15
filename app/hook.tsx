@@ -43,6 +43,8 @@ const getPath = async (text?: string) => {
   });
 
   if (!res.ok) {
+    console.log(`${process.env.NEXT_PUBLIC_API_URL}/api/text2path`);
+
     throw new Error('フェッチに失敗しました');
   }
 
