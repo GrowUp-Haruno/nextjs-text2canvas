@@ -1,3 +1,4 @@
 {
+  "rules": { "eslintreact-hooks/exhaustive-deps": false },
   "extends": "next/core-web-vitals"
 }
