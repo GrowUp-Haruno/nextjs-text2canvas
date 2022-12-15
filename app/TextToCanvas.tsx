@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Canvas } from './Canvas';
+import { TextInput } from './TextInput';
 
 export function TextToCanvas() {
   const maxNameLength = 20;
@@ -32,18 +33,14 @@ export function TextToCanvas() {
   };
 
   return (
-    <div className="App">
-      <input
-        type="text"
-        onChange={changeInput}
-        value={inputText}
-        disabled={isLoading}
+    <div>
+      <TextInput
+        inputText={inputText}
+        isLoading={isLoading}
+        changeInput={changeInput}
+        changeText2Path={changeText2Path}
       />
-      <button onClick={changeText2Path} disabled={isLoading}>
-        変換
-      </button>
-      <br />
-      <Canvas textPath={textPath} />
+      <Canvas textPath={textPath} isLoading={isLoading} />
     </div>
   );
 }
