@@ -20,6 +20,8 @@ export const useTextToCanvas = () => {
     if (!(e.target.value.length <= maxNameLength)) return;
 
     setInputText(() => e.target.value);
+
+    setTextPath(await getPath(e.target.value));
   };
 
   const changeText2Path: React.MouseEventHandler<
