@@ -22,7 +22,7 @@ export default async function handler(
   const POSITION_Y = 80;
   const FONT_SIZE = 76;
   const FILL = 'red';
-  const STORKE = 'red';
+  const STORKE = 'black';
 
   const { text }: { text: string } = req.body;
   const regex = /[&'`"<>]/g;
