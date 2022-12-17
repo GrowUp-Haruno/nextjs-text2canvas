@@ -8,15 +8,14 @@ export const Canvas: FC<{
 }> = memo(({ textPath, isLoading }) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
-  const [positionX, setPositionX] = useState(0);
-  const [positionY, setPositionY] = useState(0);
+  const positionX = useRef(0);
+  const positionY = useRef(0);
+  const initialX = useRef(0);
+  const initialY = useRef(0);
+  const isSuppressionX = useRef(false);
+  const isSuppressionY = useRef(false);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
-  const [initialX, setInitialX] = useState(0);
-  const [initialY, setInitialY] = useState(0);
-  const [isDrag, setIsDrag] = useState(false);
-  console.log(offsetX);
-  console.log(offsetY);
 
   useEffect(() => {
     if (canvas.current === null) return;
@@ -24,16 +23,21 @@ export const Canvas: FC<{
     canvas.current.height = 300;
     canvasCtx.current = canvas.current.getContext('2d');
 
-    if (canvasCtx.current === null) return;
-    if (textPath === null) return;
+    document.addEventListener('keydown', handleShiftDown);
 
-    pathDraw({ ctx: canvasCtx.current, path: textPath, offsetX, offsetY });
+    return () => {
+      document.removeEventListener('keydown', handleShiftDown);
+      canvas.current?.removeEventListener('mousemove', handleMove);
+      canvas.current?.removeEventListener('mouseout', handleOut);
+      canvas.current?.removeEventListener('mouseup', handleUp);
+    };
   }, []);
 
   useEffect(() => {
     if (canvas.current === null) return;
     if (canvasCtx.current === null) return;
     if (textPath === null) return;
+
     canvasCtx.current.clearRect(
       0,
       0,
@@ -43,30 +47,89 @@ export const Canvas: FC<{
     pathDraw({ ctx: canvasCtx.current, path: textPath, offsetX, offsetY });
   }, [textPath, offsetX, offsetY]);
 
+  function handleShiftDown(event: KeyboardEvent) {
+    if (event.key !== 'Shift') return;
+    isSuppressionX.current = true;
+    isSuppressionY.current = false;
+    document.addEventListener('keydown', handleAltDown);
+    document.addEventListener('keyup', handleShiftUp);
+  }
+
+  function handleAltDown(event: KeyboardEvent) {
+    if (event.key !== 'Alt') return;
+    isSuppressionX.current = false;
+    isSuppressionY.current = true;
+    document.addEventListener('keyup', handleAltUp);
+  }
+
+  function handleShiftUp(event: KeyboardEvent) {
+    if (event.key !== 'Shift') return;
+    isSuppressionX.current = false;
+    isSuppressionY.current = false;
+    document.removeEventListener('keydown', handleAltDown);
+    document.removeEventListener('keyup', handleAltUp);
+    document.removeEventListener('keyup', handleShiftUp);
+  }
+
+  function handleAltUp(event: KeyboardEvent) {
+    if (event.key !== 'Alt') return;
+    isSuppressionX.current = true;
+    isSuppressionY.current = false;
+    document.removeEventListener('keydown', handleAltDown);
+    document.removeEventListener('keyup', handleAltUp);
+  }
+
+  function handleDown(
+    downEvent: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) {
+    if (!isSuppressionX.current) initialX.current = downEvent.screenX;
+    if (!isSuppressionY.current) initialY.current = downEvent.screenY;
+
+    canvas.current?.addEventListener('mousemove', handleMove);
+    canvas.current?.addEventListener('mouseup', handleUp);
+    canvas.current?.addEventListener('mouseout', handleOut);
+  }
+
+  function handleMove(moveEvent: MouseEvent) {
+    if (!isSuppressionX.current)
+      setOffsetX(positionX.current + moveEvent.screenX - initialX.current);
+    if (!isSuppressionY.current)
+      setOffsetY(positionY.current + moveEvent.screenY - initialY.current);
+  }
+
+  function handleUp(upEvent: MouseEvent) {
+    if (!isSuppressionX.current)
+      positionX.current += upEvent.screenX - initialX.current;
+    if (!isSuppressionY.current)
+      positionY.current += upEvent.screenY - initialY.current;
+    canvas.current?.removeEventListener('mousemove', handleMove);
+    canvas.current?.removeEventListener('mouseout', handleOut);
+    canvas.current?.removeEventListener('mouseup', handleUp);
+  }
+
+  function handleOut(upEvent: MouseEvent) {
+    if (!isSuppressionX.current)
+      positionX.current += upEvent.screenX - initialX.current;
+    if (!isSuppressionY.current)
+      positionY.current += upEvent.screenY - initialY.current;
+    canvas.current?.removeEventListener('mousemove', handleMove);
+    canvas.current?.removeEventListener('mouseup', handleUp);
+    canvas.current?.removeEventListener('mouseout', handleOut);
+  }
+
   return (
-    <div>
+    <div id="field">
       {isLoading && <p>通信中...</p>}
       <canvas
         ref={canvas}
-        style={{ display: isLoading ? 'none' : undefined }}
-        onMouseDown={(e) => {
-          setInitialX(e.screenX);
-          setInitialY(e.screenY);
-          setIsDrag(true);
+        style={{
+          display: isLoading ? 'none' : undefined,
+          backgroundColor: '#E6E6E6',
         }}
-        onMouseMove={(e) => {
-          if (!isDrag) return;
-          setOffsetX(positionX + e.screenX - initialX);
-          setOffsetY(positionY + e.screenY - initialY);
-        }}
-        onMouseUp={() => {
-          setInitialX(0);
-          setInitialY(0);
-          setPositionX(offsetX);
-          setPositionY(offsetY);
-          setIsDrag(false);
-        }}
+        onMouseDown={handleDown}
       />
+      <p>Shiftキーを押すと上下移動</p>
+      <p>Shift + Altで左右移動</p>
     </div>
   );
 });
@@ -121,6 +184,7 @@ const pathDraw = ({
     ctx.stroke();
   }
 };
+
 // const pathDraw = ({
 //   ctx,
 //   path,
