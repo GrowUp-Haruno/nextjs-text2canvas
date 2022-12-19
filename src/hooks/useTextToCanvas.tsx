@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TPath } from './TextToCanvas';
+import { TPath } from '../app/TextToCanvas';
 
 export const useTextToCanvas = () => {
   const maxNameLength = 20;
@@ -22,9 +22,7 @@ export const useTextToCanvas = () => {
     setInputText(() => e.target.value);
   };
 
-  const changeText2Path: React.MouseEventHandler<
-    HTMLButtonElement
-  > = async () => {
+  const changeText2Path: React.MouseEventHandler<HTMLButtonElement> = async () => {
     setIsLoading(true);
     setTextPath(await getPath(inputText));
     setIsLoading(false);

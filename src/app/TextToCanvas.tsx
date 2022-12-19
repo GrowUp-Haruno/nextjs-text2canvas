@@ -1,12 +1,11 @@
 'use client';
 import { memo } from 'react';
 import { Canvas } from './Canvas';
-import { useTextToCanvas } from './hook';
+import { useTextToCanvas } from '../hooks/useTextToCanvas';
 import { TextInput } from './TextInput';
 
 export const TextToCanvas = memo(() => {
-  const { inputText, isLoading, textPath, changeInput, changeText2Path } =
-    useTextToCanvas();
+  const { inputText, isLoading, textPath, changeInput, changeText2Path } = useTextToCanvas();
 
   return (
     <div>

@@ -18,7 +18,7 @@ export const Canvas: FC<{
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
     pathDraw({ ctx: canvasCtx.current, path: textPath, offsetX, offsetY });
   }, [textPath, offsetX, offsetY]);
-  
+
   return (
     <div>
       {isLoading && <p>通信中...</p>}
