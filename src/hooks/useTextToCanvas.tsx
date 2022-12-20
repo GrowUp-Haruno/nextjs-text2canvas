@@ -42,10 +42,10 @@ export const useTextToCanvas = () => {
 
       return [...prev, textPath];
     });
-    
+
     setInputText('');
     setIsLoading(false);
   };
 
-  return { inputText, isLoading, textPaths, changeInput, changeText2Path };
+  return { inputText, isLoading, textPaths, changeInput, changeText2Path, setTextPaths };
 };

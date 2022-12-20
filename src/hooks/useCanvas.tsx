@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Dispatch, SetStateAction } from 'react';
+import { TextPath } from '../types/TextPath';
 
-export const useCanvas = () => {
+export const useCanvas = (setTextPaths: Dispatch<SetStateAction<TextPath[]>>) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
   const rect = useRef<DOMRect>();
@@ -32,18 +33,18 @@ export const useCanvas = () => {
   function handleDown(event: MouseEvent) {
     if (canvas.current === null) return;
     if (rect.current === undefined) return;
-    
+
     initialX.current = event.screenX - rect.current.left;
     initialY.current = event.screenY - rect.current.top;
-    
+
     canvas.current.addEventListener('mousemove', handleMove);
     canvas.current.addEventListener('mouseup', handleUp);
     canvas.current.addEventListener('mouseout', handleOut);
   }
-  
+
   function handleMove(event: MouseEvent) {
     if (rect.current === undefined) return;
-    
+
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 

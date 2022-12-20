@@ -7,8 +7,9 @@ import { TextPath } from '../types/TextPath';
 export const Canvas: FC<{
   textPaths: TextPath[];
   isLoading: boolean;
-}> = memo(({ textPaths, isLoading }) => {
-  const { canvas, canvasCtx, offsetX, offsetY } = useCanvas();
+  setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
+}> = memo(({ textPaths, isLoading, setTextPaths }) => {
+  const { canvas, canvasCtx, offsetX, offsetY } = useCanvas(setTextPaths);
 
   useEffect(() => {
     if (canvas.current === null) return;
