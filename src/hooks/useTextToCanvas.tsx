@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getTextPath } from '../commons/getTextPath';
-import { Coordinates, Path, TextPath } from '../types/TextPath';
+import { TextPath } from '../types/TextPath';
 
 export const useTextToCanvas = () => {
   const maxNameLength = 20;
@@ -23,11 +23,25 @@ export const useTextToCanvas = () => {
     setInputText(() => e.target.value);
   };
 
+  /**
+   * Todo
+   * textPathをスタックしていく方式になっているので関数名を変更する
+   */
   const changeText2Path: React.MouseEventHandler<HTMLButtonElement> = async () => {
     setIsLoading(true);
 
     const textPath: TextPath = await getTextPath(inputText);
-    setTextPaths((prev) => [...prev, textPath]);
+    setTextPaths((prev) => {
+      const SHIFT_MAGNIFICATION: number = 8; //px
+      const shiftPosition = SHIFT_MAGNIFICATION * prev.length;
+
+      textPath.offset.x += shiftPosition;
+      textPath.offset.y += shiftPosition;
+      textPath.endPoint.x += shiftPosition;
+      textPath.endPoint.y += shiftPosition;
+
+      return [...prev, textPath];
+    });
 
     setIsLoading(false);
   };

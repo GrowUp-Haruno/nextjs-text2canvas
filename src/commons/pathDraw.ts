@@ -11,7 +11,9 @@ export function pathDraw({
   offsetX: number;
   offsetY: number;
 }) {
+  ctx.save();
   ctx.beginPath();
+
   for (let i = 0; i < textPath.commands.length; i += 1) {
     const cmd = textPath.commands[i];
     if (cmd.type === 'M') {
@@ -44,4 +46,6 @@ export function pathDraw({
     ctx.lineWidth = textPath.strokeWidth;
     ctx.stroke();
   }
+
+  ctx.restore();
 }

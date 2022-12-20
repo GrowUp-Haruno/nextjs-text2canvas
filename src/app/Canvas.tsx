@@ -18,7 +18,14 @@ export const Canvas: FC<{
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
     textPaths.forEach((textPath, i) => {
       if (canvasCtx.current === null) return;
-      pathDraw({ ctx: canvasCtx.current, textPath, offsetX: offsetX + i * 5, offsetY: offsetY + i * 5 });
+      console.log(textPath);
+
+      pathDraw({
+        ctx: canvasCtx.current,
+        textPath,
+        offsetX: textPath.offset.x,
+        offsetY: textPath.offset.y,
+      });
     });
   }, [textPaths, offsetX, offsetY]);
 

@@ -14,9 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method !== 'POST') return res.status(500);
 
   const MAX_TEXT_LENGTH = 20;
-  const POSITION_X = 0;
-  const POSITION_Y = 80;
   const FONT_SIZE = 76;
+  const POSITION_X = 0;
+  const POSITION_Y = 0;
   const FILL = 'red';
   const STORKE = 'black';
 
@@ -31,14 +31,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   path.fill = FILL;
   path.stroke = STORKE;
 
-  const offset: Coordinates = { x: POSITION_X, y: POSITION_Y };
-  const endPoint: Coordinates = { x: 0, y: 0 };
+  const offset: Coordinates = { x: 0, y: 0 };
+  const startPoint: Coordinates = { x: Infinity, y: Infinity };
+  const endPoint: Coordinates = { x: -Infinity, y: -Infinity };
+
   const commands = path.commands;
   commands.forEach((command) => {
     if (command.type === 'Z') return;
-    if (endPoint.x < command.x + offset.x) endPoint.x = command.x + offset.x;
-    if (endPoint.y < command.y + offset.y) endPoint.y = command.y + offset.y;
+
+    if (startPoint.x > command.x) startPoint.x = command.x;
+    if (startPoint.y > command.y) startPoint.y = command.y;
+    if (endPoint.x < command.x) endPoint.x = command.x;
+    if (endPoint.y < command.y) endPoint.y = command.y;
   });
+
+  offset.x = -startPoint.x;
+  offset.y = -startPoint.y;
+  endPoint.x += offset.x;
+  endPoint.y += offset.x;
+
   const textPath: TextPath = {
     ...path,
     offset,
