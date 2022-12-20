@@ -33,7 +33,7 @@ export const useTextToCanvas = () => {
     const textPath: TextPath = await getTextPath(inputText);
     setTextPaths((prev) => {
       const SHIFT_MAGNIFICATION: number = 8; //px
-      const shiftPosition = SHIFT_MAGNIFICATION * prev.length;
+      const shiftPosition = SHIFT_MAGNIFICATION * (prev.length + 1);
 
       textPath.offset.x += shiftPosition;
       textPath.offset.y += shiftPosition;
@@ -42,7 +42,8 @@ export const useTextToCanvas = () => {
 
       return [...prev, textPath];
     });
-
+    
+    setInputText('');
     setIsLoading(false);
   };
 
