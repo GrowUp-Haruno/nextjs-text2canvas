@@ -5,11 +5,11 @@ export const useTextToCanvas = () => {
   const maxNameLength = 20;
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [inputText, setInputText] = useState<string>('');
-  const [textPath, setTextPath] = useState<TPath | null>(null);
+  const [textPaths, setTextPaths] = useState<TPath[]>([]);
 
   useEffect(() => {
     (async () => {
-      setTextPath(await getPath(inputText));
+      await getPath(inputText);
       setIsLoading(false);
     })();
   }, []);
@@ -24,11 +24,11 @@ export const useTextToCanvas = () => {
 
   const changeText2Path: React.MouseEventHandler<HTMLButtonElement> = async () => {
     setIsLoading(true);
-    setTextPath(await getPath(inputText));
+    setTextPaths([...textPaths, await getPath(inputText)]);
     setIsLoading(false);
   };
 
-  return { inputText, isLoading, textPath, changeInput, changeText2Path };
+  return { inputText, isLoading, textPaths, changeInput, changeText2Path };
 };
 
 const getPath = async (text?: string) => {

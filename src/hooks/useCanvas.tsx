@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { TPath } from '../app/TextToCanvas';
-import { pathDraw } from '../commons/pathDraw';
 
-export const useCanvas = (textPath: TPath | null) => {
+export const useCanvas = () => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
 

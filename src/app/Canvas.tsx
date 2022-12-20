@@ -5,19 +5,22 @@ import { useCanvas } from '../hooks/useCanvas';
 import { TPath } from './TextToCanvas';
 
 export const Canvas: FC<{
-  textPath: TPath | null;
+  textPaths: TPath[];
   isLoading: boolean;
-}> = memo(({ textPath, isLoading }) => {
-  const { canvas, canvasCtx, offsetX, offsetY } = useCanvas(textPath);
+}> = memo(({ textPaths, isLoading }) => {
+  const { canvas, canvasCtx, offsetX, offsetY } = useCanvas();
 
   useEffect(() => {
     if (canvas.current === null) return;
     if (canvasCtx.current === null) return;
-    if (textPath === null) return;
+    if (textPaths === null) return;
 
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
-    pathDraw({ ctx: canvasCtx.current, path: textPath, offsetX, offsetY });
-  }, [textPath, offsetX, offsetY]);
+    textPaths.forEach((textPaths, i) => {
+      if (canvasCtx.current === null) return;
+      pathDraw({ ctx: canvasCtx.current, path: textPaths, offsetX: offsetX + i * 5, offsetY: offsetY + i * 5 });
+    });
+  }, [textPaths, offsetX, offsetY]);
 
   return (
     <div>

@@ -5,7 +5,7 @@ import { useTextToCanvas } from '../hooks/useTextToCanvas';
 import { TextInput } from './TextInput';
 
 export const TextToCanvas = memo(() => {
-  const { inputText, isLoading, textPath, changeInput, changeText2Path } = useTextToCanvas();
+  const { inputText, isLoading, textPaths, changeInput, changeText2Path } = useTextToCanvas();
 
   return (
     <div>
@@ -15,7 +15,7 @@ export const TextToCanvas = memo(() => {
         changeInput={changeInput}
         changeText2Path={changeText2Path}
       />
-      <Canvas textPath={textPath} isLoading={isLoading} />
+      <Canvas textPaths={textPaths} isLoading={isLoading} />
     </div>
   );
 });
