@@ -19,10 +19,3 @@ export const TextToCanvas = memo(() => {
     </div>
   );
 });
-
-export type TPath = {
-  commands: opentype.PathCommand[];
-  fill: string | null;
-  stroke: string | null;
-  strokeWidth: number;
-};

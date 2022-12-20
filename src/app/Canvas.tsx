@@ -2,10 +2,10 @@
 import { FC, memo, useEffect } from 'react';
 import { pathDraw } from '../commons/pathDraw';
 import { useCanvas } from '../hooks/useCanvas';
-import { TPath } from './TextToCanvas';
+import { TextPath } from '../types/TextPath';
 
 export const Canvas: FC<{
-  textPaths: TPath[];
+  textPaths: TextPath[];
   isLoading: boolean;
 }> = memo(({ textPaths, isLoading }) => {
   const { canvas, canvasCtx, offsetX, offsetY } = useCanvas();
@@ -16,9 +16,9 @@ export const Canvas: FC<{
     if (textPaths === null) return;
 
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
-    textPaths.forEach((textPaths, i) => {
+    textPaths.forEach((textPath, i) => {
       if (canvasCtx.current === null) return;
-      pathDraw({ ctx: canvasCtx.current, path: textPaths, offsetX: offsetX + i * 5, offsetY: offsetY + i * 5 });
+      pathDraw({ ctx: canvasCtx.current, textPath, offsetX: offsetX + i * 5, offsetY: offsetY + i * 5 });
     });
   }, [textPaths, offsetX, offsetY]);
 

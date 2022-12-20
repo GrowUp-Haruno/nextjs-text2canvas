@@ -1,19 +1,19 @@
-import { TPath } from '../app/TextToCanvas';
+import { TextPath } from '../types/TextPath';
 
 export function pathDraw({
   ctx,
-  path,
+  textPath,
   offsetX,
   offsetY,
 }: {
   ctx: CanvasRenderingContext2D;
-  path: TPath;
+  textPath: TextPath;
   offsetX: number;
   offsetY: number;
 }) {
   ctx.beginPath();
-  for (let i = 0; i < path.commands.length; i += 1) {
-    const cmd = path.commands[i];
+  for (let i = 0; i < textPath.commands.length; i += 1) {
+    const cmd = textPath.commands[i];
     if (cmd.type === 'M') {
       ctx.moveTo(cmd.x + offsetX, cmd.y + offsetY);
     } else if (cmd.type === 'L') {
@@ -34,14 +34,14 @@ export function pathDraw({
     }
   }
 
-  if (path.fill) {
-    ctx.fillStyle = path.fill;
+  if (textPath.fill) {
+    ctx.fillStyle = textPath.fill;
     ctx.fill();
   }
 
-  if (path.stroke) {
-    ctx.strokeStyle = path.stroke;
-    ctx.lineWidth = path.strokeWidth;
+  if (textPath.stroke) {
+    ctx.strokeStyle = textPath.stroke;
+    ctx.lineWidth = textPath.strokeWidth;
     ctx.stroke();
   }
 }
