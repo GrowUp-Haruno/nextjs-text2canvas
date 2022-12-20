@@ -1,11 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import opentype from 'opentype.js';
 import * as fp from 'path';
-
-import { TPath } from '../../app/TextToCanvas';
+import { Coordinates, TextPath } from '../../types/TextPath';
 
 type Data = {
-  path: TPath;
+  textPath: TextPath;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
@@ -31,5 +30,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const path = font.getPath(text, POSITION_X, POSITION_Y, FONT_SIZE);
   path.fill = FILL;
   path.stroke = STORKE;
-  res.status(200).json({ path });
+
+  const offset: Coordinates = { x: POSITION_X, y: POSITION_Y };
+  const endPoint: Coordinates = { x: 0, y: 0 };
+  const commands = path.commands;
+  commands.forEach((command) => {
+    if (command.type === 'Z') return;
+    if (endPoint.x < command.x + offset.x) endPoint.x = command.x + offset.x;
+    if (endPoint.y < command.y + offset.y) endPoint.y = command.y + offset.y;
+  });
+  const textPath: TextPath = {
+    ...path,
+    offset,
+    endPoint,
+  };
+
+  return res.status(200).json({ textPath });
 }
