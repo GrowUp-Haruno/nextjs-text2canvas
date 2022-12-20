@@ -54,6 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     ...path,
     offset,
     endPoint,
+    text,
+    isSelected: false,
   };
 
   return res.status(200).json({ textPath });

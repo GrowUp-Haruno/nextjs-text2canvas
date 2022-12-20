@@ -18,7 +18,6 @@ export const Canvas: FC<{
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
     textPaths.forEach((textPath, i) => {
       if (canvasCtx.current === null) return;
-      console.log(textPath);
 
       pathDraw({
         ctx: canvasCtx.current,

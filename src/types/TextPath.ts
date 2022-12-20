@@ -1,6 +1,8 @@
 export type TextPath = Path & {
   offset: Coordinates;
   endPoint: Coordinates;
+  text: string;
+  isSelected: boolean;
 };
 
 export type Path = {
