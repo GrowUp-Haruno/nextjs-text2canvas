@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
-import { TPath } from '../app/TextToCanvas';
+import { getTextPath } from '../commons/getTextPath';
+import { Coordinates, Path, TextPath } from '../types/TextPath';
 
 export const useTextToCanvas = () => {
   const maxNameLength = 20;
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [inputText, setInputText] = useState<string>('');
-  const [textPaths, setTextPaths] = useState<TPath[]>([]);
+  const [textPaths, setTextPaths] = useState<TextPath[]>([]);
 
   useEffect(() => {
     (async () => {
-      await getPath(inputText);
+      await getTextPath(inputText);
       setIsLoading(false);
     })();
   }, []);
@@ -24,29 +25,12 @@ export const useTextToCanvas = () => {
 
   const changeText2Path: React.MouseEventHandler<HTMLButtonElement> = async () => {
     setIsLoading(true);
-    setTextPaths([...textPaths, await getPath(inputText)]);
+
+    const textPath: TextPath = await getTextPath(inputText);
+    setTextPaths((prev) => [...prev, textPath]);
+
     setIsLoading(false);
   };
 
   return { inputText, isLoading, textPaths, changeInput, changeText2Path };
-};
-
-const getPath = async (text?: string) => {
-  const res = await fetch(`/api/text2path`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text }),
-  });
-
-  // if (!res.ok) {
-  //   throw new Error('フェッチに失敗しました');
-  // }
-
-  const { path } = (await res.json()) as {
-    path: TPath;
-  };
-
-  return path;
 };
