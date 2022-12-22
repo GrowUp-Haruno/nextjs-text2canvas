@@ -30,6 +30,31 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
     const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
     const clickPositionY = event.pageY - event.currentTarget.offsetTop;
 
+    const textPathMaxIndex = textPaths.length - 1;
+    const textPathHit = textPaths
+      .slice()
+      .reverse()
+      .some((textPath, i) => {
+        // クリックした座標が文字列の枠内か判定
+        if (clickPositionX < textPath.offset.x) return false;
+        if (clickPositionX > textPath.endPoint.x) return false;
+        if (clickPositionY < textPath.endPoint.y) return false;
+        if (clickPositionY > textPath.offset.y) return false;
+
+        // textPathsの要素が１、または先頭の要素をクリックした場合はsetStateの処理をスキップ
+        // ただし、ヒット判定は返す
+        if (i === 0) return true;
+        if (textPathMaxIndex === 0) return true;
+
+        const someIndex = textPathMaxIndex - i;
+        const filterTextPath = textPaths.filter((_, filterIndex) => someIndex !== filterIndex);
+        setTextPaths([...filterTextPath, textPath]);
+
+        return true;
+      });
+
+    if (!textPathHit) return;
+
     initialX.current = clickPositionX;
     initialY.current = clickPositionY;
     positionX.current = offsetX;
