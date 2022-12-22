@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState, Dispatch, SetStateAction } from 'react';
+import { useEffect, useRef, useState, Dispatch, SetStateAction, useCallback } from 'react';
 import { TextPath } from '../types/TextPath';
 
-export const useCanvas = (setTextPaths: Dispatch<SetStateAction<TextPath[]>>) => {
+export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetStateAction<TextPath[]>>) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
-  const rect = useRef<DOMRect>();
 
   const positionX = useRef(0);
   const positionY = useRef(0);
@@ -16,26 +15,25 @@ export const useCanvas = (setTextPaths: Dispatch<SetStateAction<TextPath[]>>) =>
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
     if (canvas.current === null) return;
-
-    rect.current = canvas.current.getBoundingClientRect();
-    canvas.current.addEventListener('mousedown', handleDown);
     canvasCtx.current = canvas.current.getContext('2d');
 
     return () => {
       if (canvas.current === null) return;
-      canvas.current.removeEventListener('mousedown', handleDown);
       canvas.current.removeEventListener('mousemove', handleMove);
       canvas.current.removeEventListener('mouseout', handleOut);
       canvas.current.removeEventListener('mouseup', handleUp);
     };
   }, []);
 
-  function handleDown(event: MouseEvent) {
+  function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if (canvas.current === null) return;
-    if (rect.current === undefined) return;
+    const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
+    const clickPositionY = event.pageY - event.currentTarget.offsetTop;
 
-    initialX.current = event.screenX - rect.current.left;
-    initialY.current = event.screenY - rect.current.top;
+    initialX.current = clickPositionX;
+    initialY.current = clickPositionY;
+    positionX.current = offsetX;
+    positionY.current = offsetY;
 
     canvas.current.addEventListener('mousemove', handleMove);
     canvas.current.addEventListener('mouseup', handleUp);
@@ -43,20 +41,23 @@ export const useCanvas = (setTextPaths: Dispatch<SetStateAction<TextPath[]>>) =>
   }
 
   function handleMove(event: MouseEvent) {
-    if (rect.current === undefined) return;
+    if (canvas.current === null) return;
 
+    const rect = canvas.current.getBoundingClientRect();
+    const clickPositionX = event.x - Math.floor(rect.x);
+    const clickPositionY = event.y - Math.floor(rect.y);
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 
     if (isMovableX) {
-      setOffsetX(positionX.current + event.screenX - initialX.current);
-      positionX.current += event.screenX - initialX.current;
-      initialX.current = event.screenX - rect.current.left;
+      setOffsetX(positionX.current + clickPositionX - initialX.current);
+      positionX.current += clickPositionX - initialX.current;
+      initialX.current = clickPositionX;
     }
     if (isMovableY) {
-      setOffsetY(positionY.current + event.screenY - initialY.current);
-      positionY.current += event.screenY - initialY.current;
-      initialY.current = event.screenY;
+      setOffsetY(positionY.current + clickPositionY - initialY.current);
+      positionY.current += clickPositionY - initialY.current;
+      initialY.current = clickPositionY;
     }
   }
 
@@ -73,5 +74,5 @@ export const useCanvas = (setTextPaths: Dispatch<SetStateAction<TextPath[]>>) =>
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
-  return { canvas, canvasCtx, offsetX, offsetY };
+  return { canvas, canvasCtx, offsetX, offsetY, handleDown };
 };

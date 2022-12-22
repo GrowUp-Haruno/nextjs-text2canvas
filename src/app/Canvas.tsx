@@ -9,7 +9,7 @@ export const Canvas: FC<{
   isLoading: boolean;
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, isLoading, setTextPaths }) => {
-  const { canvas, canvasCtx, offsetX, offsetY } = useCanvas(setTextPaths);
+  const { canvas, canvasCtx, offsetX, offsetY, handleDown } = useCanvas(textPaths, setTextPaths);
 
   useEffect(() => {
     if (canvas.current === null) return;
@@ -34,6 +34,7 @@ export const Canvas: FC<{
       {isLoading && <p>通信中...</p>}
       <canvas
         id="canvas"
+        onMouseDown={handleDown}
         style={{
           display: isLoading ? 'none' : undefined,
           backgroundColor: '#E6E6E6',
