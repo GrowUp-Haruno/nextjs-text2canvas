@@ -1,16 +1,13 @@
-import { useEffect, useRef, useState, Dispatch, SetStateAction, useCallback } from 'react';
+import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { TextPath } from '../types/TextPath';
 
 export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetStateAction<TextPath[]>>) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
-
-  const positionX = useRef(0);
-  const positionY = useRef(0);
+  const filterTextPaths = useRef<TextPath[]>([]);
+  const hitTextPath = useRef<TextPath>();
   const initialX = useRef(0);
   const initialY = useRef(0);
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
 
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
@@ -41,14 +38,11 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
         if (clickPositionY < textPath.endPoint.y) return false;
         if (clickPositionY > textPath.offset.y) return false;
 
-        // textPathsの要素が１、または先頭の要素をクリックした場合はsetStateの処理をスキップ
-        // ただし、ヒット判定は返す
-        if (i === 0) return true;
-        if (textPathMaxIndex === 0) return true;
-
         const someIndex = textPathMaxIndex - i;
-        const filterTextPath = textPaths.filter((_, filterIndex) => someIndex !== filterIndex);
-        setTextPaths([...filterTextPath, textPath]);
+        filterTextPaths.current = textPaths.filter((_, filterIndex) => someIndex !== filterIndex);
+        hitTextPath.current = textPath;
+
+        setTextPaths([...filterTextPaths.current, hitTextPath.current]);
 
         return true;
       });
@@ -57,8 +51,6 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
 
     initialX.current = clickPositionX;
     initialY.current = clickPositionY;
-    positionX.current = offsetX;
-    positionY.current = offsetY;
 
     canvas.current.addEventListener('mousemove', handleMove);
     canvas.current.addEventListener('mouseup', handleUp);
@@ -67,6 +59,7 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
 
   function handleMove(event: MouseEvent) {
     if (canvas.current === null) return;
+    if (hitTextPath.current === undefined) return;
 
     const rect = canvas.current.getBoundingClientRect();
     const clickPositionX = event.x - Math.floor(rect.x);
@@ -75,15 +68,16 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
     const isMovableY = !event.shiftKey || !event.altKey;
 
     if (isMovableX) {
-      setOffsetX(positionX.current + clickPositionX - initialX.current);
-      positionX.current += clickPositionX - initialX.current;
+      hitTextPath.current.offset.x += clickPositionX - initialX.current;
+      hitTextPath.current.endPoint.x += clickPositionX - initialX.current;
       initialX.current = clickPositionX;
     }
     if (isMovableY) {
-      setOffsetY(positionY.current + clickPositionY - initialY.current);
-      positionY.current += clickPositionY - initialY.current;
+      hitTextPath.current.offset.y += clickPositionY - initialY.current;
+      hitTextPath.current.endPoint.y += clickPositionY - initialY.current;
       initialY.current = clickPositionY;
     }
+    setTextPaths([...filterTextPaths.current, hitTextPath.current]);
   }
 
   function handleUp(event: MouseEvent) {
@@ -99,5 +93,5 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
-  return { canvas, canvasCtx, offsetX, offsetY, handleDown };
+  return { canvas, canvasCtx, handleDown };
 };
