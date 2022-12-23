@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getTextPath } from '../commons/getTextPath';
+import { isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath } from '../types/TextPath';
 
 export const useTextToCanvas = () => {
@@ -14,6 +15,18 @@ export const useTextToCanvas = () => {
       setIsLoading(false);
     })();
   }, []);
+
+  useEffect(() => {
+    document.addEventListener('keyup', handleKeyup);
+    return () => {
+      document.removeEventListener('keyup', handleKeyup);
+    };
+  }, [textPaths]);
+
+  const handleKeyup = (event: KeyboardEvent) => {
+    if(event.key === 'Escape') setTextPaths(isSelectedReset)
+    
+  };
 
   const changeInput: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
     const regex = /[&'`"<>]/g;
