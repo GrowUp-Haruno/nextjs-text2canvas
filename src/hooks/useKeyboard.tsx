@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useEffect } from 'react';
-import { isSelectedReset } from '../commons/setTextPathsFn';
+import { isSelectedDelete, isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath } from '../types/TextPath';
 
 type HooksArg = { textPaths: TextPath[]; setTextPaths: Dispatch<SetStateAction<TextPath[]>> };
@@ -15,7 +15,10 @@ export const useKeyboard: CustomHooks = ({ textPaths, setTextPaths }) => {
   }, [textPaths]);
 
   const handleKeyup = (event: KeyboardEvent) => {
+    console.log(event.key);
+    
     if (event.key === 'Escape') setTextPaths(isSelectedReset);
+    if (event.key === 'Delete') setTextPaths(isSelectedDelete);
   };
 
   return {};
