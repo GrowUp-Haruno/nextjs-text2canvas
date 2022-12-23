@@ -41,6 +41,7 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
         const someIndex = textPathMaxIndex - i;
         filterTextPaths.current = textPaths.filter((_, filterIndex) => someIndex !== filterIndex);
         hitTextPath.current = textPath;
+        hitTextPath.current.isSelected = true;
 
         setTextPaths([...filterTextPaths.current, hitTextPath.current]);
 

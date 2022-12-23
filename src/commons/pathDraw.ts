@@ -47,5 +47,17 @@ export function pathDraw({
     ctx.stroke();
   }
 
+  if (textPath.isSelected) {
+    ctx.beginPath();
+    const padding = 4;
+    const x = textPath.offset.x - padding;
+    const y = textPath.offset.y + padding;
+    const w = textPath.endPoint.x - x + padding;
+    const h = textPath.endPoint.y - y - padding;
+    ctx.fillStyle = 'rgba(30, 144, 255, 0.2)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'dodgerblue';
+    ctx.strokeRect(x, y, w, h);
+  }
   ctx.restore();
 }
