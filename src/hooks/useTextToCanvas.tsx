@@ -16,18 +16,6 @@ export const useTextToCanvas = () => {
     })();
   }, []);
 
-  useEffect(() => {
-    document.addEventListener('keyup', handleKeyup);
-    return () => {
-      document.removeEventListener('keyup', handleKeyup);
-    };
-  }, [textPaths]);
-
-  const handleKeyup = (event: KeyboardEvent) => {
-    if(event.key === 'Escape') setTextPaths(isSelectedReset)
-    
-  };
-
   const changeInput: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
     const regex = /[&'`"<>]/g;
     if (regex.test(e.target.value)) return;
