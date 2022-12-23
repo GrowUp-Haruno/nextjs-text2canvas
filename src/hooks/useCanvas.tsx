@@ -1,4 +1,5 @@
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
+import { isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath } from '../types/TextPath';
 
 export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetStateAction<TextPath[]>>) => {
@@ -48,7 +49,7 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
         return true;
       });
 
-    if (!textPathHit) return;
+    if (!textPathHit) return setTextPaths(isSelectedReset);
 
     initialX.current = clickPositionX;
     initialY.current = clickPositionY;
