@@ -1,8 +1,15 @@
-import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
+import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject } from 'react';
 import { isSelectedReset } from '../commons/setTextPathsFn';
+import { System } from '../types/System';
 import { TextPath } from '../types/TextPath';
 
-export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetStateAction<TextPath[]>>) => {
+type HooksArg = {
+  system: MutableRefObject<System>;
+  textPaths: TextPath[];
+  setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
+};
+
+export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
   const filterTextPaths = useRef<TextPath[]>([]);
@@ -41,7 +48,12 @@ export const useCanvas = (textPaths: TextPath[], setTextPaths: Dispatch<SetState
 
         const someIndex = textPathMaxIndex - i;
         filterTextPaths.current = textPaths.filter((_, filterIndex) => someIndex !== filterIndex);
-        filterTextPaths.current = filterTextPaths.current.map((textPath) => ({ ...textPath, isSelected: false }));
+
+        const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
+        const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
+        if (!(pressedMacCommandKey || pressedWinControlKey))
+          filterTextPaths.current = filterTextPaths.current.map((textPath) => ({ ...textPath, isSelected: false }));
+
         hitTextPath.current = textPath;
         hitTextPath.current.isSelected = true;
 

@@ -2,6 +2,7 @@
 import { FC, memo, useEffect } from 'react';
 import { pathDraw } from '../commons/pathDraw';
 import { useCanvas } from '../hooks/useCanvas';
+import { useSystem } from '../hooks/useSystem';
 import { TextPath } from '../types/TextPath';
 
 export const Canvas: FC<{
@@ -9,7 +10,8 @@ export const Canvas: FC<{
   isLoading: boolean;
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, isLoading, setTextPaths }) => {
-  const { canvas, canvasCtx, handleDown } = useCanvas(textPaths, setTextPaths);
+  const { system } = useSystem();
+  const { canvas, canvasCtx, handleDown } = useCanvas({ textPaths, setTextPaths, system });
 
   useEffect(() => {
     if (canvas.current === null) return;
