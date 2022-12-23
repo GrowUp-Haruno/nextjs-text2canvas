@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getTextPath } from '../commons/getTextPath';
-import { isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath } from '../types/TextPath';
 
 export const useTextToCanvas = () => {
