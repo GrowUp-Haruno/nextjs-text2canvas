@@ -32,8 +32,11 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if (canvas.current === null) return;
+    setTextPaths(isSelectedReset);
     const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
     const clickPositionY = event.pageY - event.currentTarget.offsetTop;
+    initialX.current = clickPositionX;
+    initialY.current = clickPositionY;
 
     const textPathMaxIndex = textPaths.length - 1;
     const textPathHit = textPaths
@@ -62,14 +65,62 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
         return true;
       });
 
-    if (!textPathHit) return setTextPaths(isSelectedReset);
+    if (textPathHit) canvas.current.addEventListener('mousemove', handleMove);
+    if (!textPathHit) canvas.current.addEventListener('mousemove', handleDrag);
 
-    initialX.current = clickPositionX;
-    initialY.current = clickPositionY;
-
-    canvas.current.addEventListener('mousemove', handleMove);
     canvas.current.addEventListener('mouseup', handleUp);
     canvas.current.addEventListener('mouseout', handleOut);
+  }
+
+  function handleDrag(event: MouseEvent) {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
+    const distanceOriginToDrag_X = event.x - Math.floor(rect.x) - initialX.current;
+    const distanceOriginToDrag_Y = event.y - Math.floor(rect.y) - initialY.current;
+
+    const newTextPath = textPaths.map((textPath) => {
+      const distanceOriginToOffset_X = textPath.offset.x - initialX.current;
+      const distanceOriginToOffset_Y = textPath.offset.y - initialY.current;
+      const distanceOriginToEndpoint_X = textPath.endPoint.x - initialX.current;
+      const distanceOriginToEndpoint_Y = textPath.endPoint.y - initialY.current;
+
+      const isBetweenOffsetToEndpoint_X = distanceOriginToOffset_X < 0 && distanceOriginToEndpoint_X > 0;
+      const isBetweenOffsetToEndpoint_Y = distanceOriginToOffset_Y > 0 && distanceOriginToEndpoint_Y < 0;
+
+      let isDragLongerThanOffset_X = false;
+      if (distanceOriginToOffset_X < 0) isDragLongerThanOffset_X = -distanceOriginToDrag_X > -distanceOriginToOffset_X;
+      if (distanceOriginToOffset_X >= 0) isDragLongerThanOffset_X = distanceOriginToDrag_X > distanceOriginToOffset_X;
+
+      let isDragLongerThanOffset_Y = false;
+      if (distanceOriginToOffset_Y < 0) isDragLongerThanOffset_Y = -distanceOriginToDrag_Y > -distanceOriginToOffset_Y;
+      if (distanceOriginToOffset_Y >= 0) isDragLongerThanOffset_Y = distanceOriginToDrag_Y > distanceOriginToOffset_Y;
+
+      let isDragLongerThanEndpoint_X = false;
+      if (distanceOriginToEndpoint_X < 0)
+        isDragLongerThanEndpoint_X = -distanceOriginToDrag_X > -distanceOriginToEndpoint_X;
+      if (distanceOriginToEndpoint_X >= 0)
+        isDragLongerThanEndpoint_X = distanceOriginToDrag_X > distanceOriginToEndpoint_X;
+
+      let isDragLongerThanEndpoint_Y = false;
+      if (distanceOriginToEndpoint_Y < 0)
+        isDragLongerThanEndpoint_Y = -distanceOriginToDrag_Y > -distanceOriginToEndpoint_Y;
+      if (distanceOriginToEndpoint_Y >= 0)
+        isDragLongerThanEndpoint_Y = distanceOriginToDrag_Y > distanceOriginToEndpoint_Y;
+
+      textPath.isSelected = false;
+      if (isBetweenOffsetToEndpoint_X && isDragLongerThanOffset_Y) textPath.isSelected = true;
+      if (isBetweenOffsetToEndpoint_X && isDragLongerThanEndpoint_Y) textPath.isSelected = true;
+      if (isBetweenOffsetToEndpoint_Y && isDragLongerThanOffset_X) textPath.isSelected = true;
+      if (isBetweenOffsetToEndpoint_Y && isDragLongerThanEndpoint_X) textPath.isSelected = true;
+
+      if (isDragLongerThanOffset_X && isDragLongerThanOffset_Y) textPath.isSelected = true;
+      if (isDragLongerThanOffset_X && isDragLongerThanEndpoint_Y) textPath.isSelected = true;
+      if (isDragLongerThanEndpoint_X && isDragLongerThanEndpoint_Y) textPath.isSelected = true;
+      if (isDragLongerThanEndpoint_X && isDragLongerThanOffset_Y) textPath.isSelected = true;
+
+      return textPath;
+    });
+    setTextPaths([...newTextPath]);
   }
 
   function handleMove(event: MouseEvent) {
@@ -98,6 +149,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
   function handleUp(event: MouseEvent) {
     if (canvas.current === null) return;
     canvas.current.removeEventListener('mousemove', handleMove);
+    canvas.current.removeEventListener('mousemove', handleDrag);
     canvas.current.removeEventListener('mouseout', handleOut);
     canvas.current.removeEventListener('mouseup', handleUp);
   }
@@ -105,6 +157,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
   function handleOut(event: MouseEvent) {
     if (canvas.current === null) return;
     canvas.current.removeEventListener('mousemove', handleMove);
+    canvas.current.removeEventListener('mousemove', handleDrag);
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
