@@ -51,9 +51,9 @@ export function pathDraw({
     ctx.beginPath();
     const padding = 4;
     const x = textPath.offset.x - padding;
-    const y = textPath.offset.y + padding;
+    const y = textPath.endPoint.y - padding;
     const w = textPath.endPoint.x - x + padding;
-    const h = textPath.endPoint.y - y - padding;
+    const h = textPath.offset.y - y + padding;
     ctx.fillStyle = 'rgba(30, 144, 255, 0.2)';
     ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = 'dodgerblue';
