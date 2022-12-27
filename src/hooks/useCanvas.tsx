@@ -1,5 +1,6 @@
 import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
 import { initialTextPath } from '../commons/initialTextPath';
+import { getNewPosition } from '../commons/setSelectedTextPath';
 import { isSelectedReset } from '../commons/setTextPathsFn';
 import { System } from '../types/System';
 import { TextPath } from '../types/TextPath';
@@ -66,14 +67,8 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
         setTextPaths([...filterTextPaths.current, hitTextPath.current]);
 
         setSelectedTextPath((prev) => {
-          let newOffset = prev.offset;
-          if (newOffset.x > hitTextPath.current.offset.x) newOffset.x = hitTextPath.current.offset.x;
-          if (newOffset.y < hitTextPath.current.offset.y) newOffset.y = hitTextPath.current.offset.y;
-
-          let newEndPoint = prev.endPoint;
-          if (newEndPoint.x < hitTextPath.current.endPoint.x) newEndPoint.x = hitTextPath.current.endPoint.x;
-          if (newEndPoint.y > hitTextPath.current.endPoint.y) newEndPoint.y = hitTextPath.current.endPoint.y;
-          return { ...prev, isSelected: true, offset: newOffset, endPoint: newEndPoint };
+          const newPosition = getNewPosition({ prev, textPath: hitTextPath.current });
+          return { ...prev, isSelected: true, offset: newPosition.offset, endPoint: newPosition.endPoint };
         });
 
         return true;
@@ -158,6 +153,10 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
       initialY.current = clickPositionY;
     }
     setTextPaths([...filterTextPaths.current, hitTextPath.current]);
+    setSelectedTextPath((prev) => {
+      const newPosition = getNewPosition({ prev, textPath: hitTextPath.current });
+      return { ...prev, isSelected: true, offset: newPosition.offset, endPoint: newPosition.endPoint };
+    });
   }
 
   function handleUp(event: MouseEvent) {
