@@ -17,8 +17,6 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
 
-  const filterTextPaths = useRef<TextPath[]>([]);
-  const hitTextPath = useRef<TextPath>(initialTextPath);
   const initialX = useRef(0);
   const initialY = useRef(0);
 
@@ -37,47 +35,60 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if (canvas.current === null) return;
-    setTextPaths(isSelectedReset);
+
     const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
     const clickPositionY = event.pageY - event.currentTarget.offsetTop;
     initialX.current = clickPositionX;
     initialY.current = clickPositionY;
 
-    const textPathMaxIndex = textPaths.length - 1;
-    const textPathHit = textPaths
+    let hitIndex = -1;
+    const hitTextPath = textPaths
       .slice()
       .reverse()
-      .some((textPath, i) => {
-        // クリックした座標が文字列の枠内か判定
+      .find((textPath, i) => {
         if (clickPositionX < textPath.offset.x) return false;
         if (clickPositionX > textPath.endPoint.x) return false;
         if (clickPositionY < textPath.endPoint.y) return false;
         if (clickPositionY > textPath.offset.y) return false;
-
-        const someIndex = textPathMaxIndex - i;
-        filterTextPaths.current = textPaths.filter((_, filterIndex) => someIndex !== filterIndex);
-
-        const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
-        const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
-        if (!(pressedMacCommandKey || pressedWinControlKey))
-          filterTextPaths.current = filterTextPaths.current.map((textPath) => ({ ...textPath, isSelected: false }));
-
-        hitTextPath.current = textPath;
-        hitTextPath.current.isSelected = true;
-
-        setTextPaths([...filterTextPaths.current, hitTextPath.current]);
-
-        // setSelectedTextPath((prev) => {
-        //   const newPosition = getNewPosition({ prev, textPath: hitTextPath.current });
-        //   return { ...prev, isSelected: true, offset: newPosition.offset, endPoint: newPosition.endPoint };
-        // });
-
+        hitIndex = textPaths.length - i - 1;
         return true;
       });
 
-    if (textPathHit) canvas.current.addEventListener('mousemove', handleMove);
-    if (!textPathHit) canvas.current.addEventListener('mousemove', handleDrag);
+    if (hitTextPath === undefined) {
+      setTextPaths(isSelectedReset);
+      canvas.current.addEventListener('mousemove', handleDrag);
+      canvas.current.addEventListener('mouseup', handleUp);
+      canvas.current.addEventListener('mouseout', handleOut);
+      return;
+    }
 
+    if (hitTextPath.isSelected === true) {
+      canvas.current.addEventListener('mousemove', handleMove);
+      canvas.current.addEventListener('mouseup', handleUp);
+      canvas.current.addEventListener('mouseout', handleOut);
+      return;
+    }
+
+    hitTextPath.isSelected = true;
+    const unHitTextPaths = textPaths.filter((_, i) => i !== hitIndex);
+    
+    const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
+    const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
+    if (pressedMacCommandKey || pressedWinControlKey) {
+      const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
+      const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
+      setTextPaths([...unSelectedTextPaths, ...selectedTextPaths, hitTextPath]);
+
+      canvas.current.addEventListener('mousemove', handleMove);
+      canvas.current.addEventListener('mouseup', handleUp);
+      canvas.current.addEventListener('mouseout', handleOut);
+      return;
+    }
+
+    const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
+    setTextPaths([...newUnHitTextPaths, hitTextPath]);
+
+    canvas.current.addEventListener('mousemove', handleMove);
     canvas.current.addEventListener('mouseup', handleUp);
     canvas.current.addEventListener('mouseout', handleOut);
   }
@@ -136,9 +147,10 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
   function handleMove(event: MouseEvent) {
     if (canvas.current === null) return;
-    
+
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
+
     const rect = canvas.current.getBoundingClientRect();
     const clickPositionX = event.x - Math.floor(rect.x);
     const clickPositionY = event.y - Math.floor(rect.y);
