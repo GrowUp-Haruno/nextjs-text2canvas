@@ -11,7 +11,8 @@ export const Canvas: FC<{
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, isLoading, setTextPaths }) => {
   const { system } = useSystem();
-  const { canvas, canvasCtx, handleDown } = useCanvas({ textPaths, setTextPaths, system });
+  const { canvas, canvasCtx, selectedTextPath, handleDown } = useCanvas({ textPaths, setTextPaths, system });
+  console.log(selectedTextPath.offset, selectedTextPath.endPoint);
 
   useEffect(() => {
     if (canvas.current === null) return;
@@ -29,7 +30,13 @@ export const Canvas: FC<{
         offsetY: textPath.offset.y,
       });
     });
-  }, [textPaths]);
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: selectedTextPath,
+      offsetX: selectedTextPath.offset.x,
+      offsetY: selectedTextPath.offset.y,
+    });
+  }, [textPaths, selectedTextPath]);
 
   return (
     <div>

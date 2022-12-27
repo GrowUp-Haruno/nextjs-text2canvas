@@ -1,4 +1,5 @@
-import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject } from 'react';
+import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
+import { initialTextPath } from '../commons/initialTextPath';
 import { isSelectedReset } from '../commons/setTextPathsFn';
 import { System } from '../types/System';
 import { TextPath } from '../types/TextPath';
@@ -10,10 +11,12 @@ type HooksArg = {
 };
 
 export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
+  const [selectedTextPath, setSelectedTextPath] = useState(initialTextPath);
+
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
   const filterTextPaths = useRef<TextPath[]>([]);
-  const hitTextPath = useRef<TextPath>();
+  const hitTextPath = useRef<TextPath>(initialTextPath);
   const initialX = useRef(0);
   const initialY = useRef(0);
 
@@ -61,6 +64,17 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
         hitTextPath.current.isSelected = true;
 
         setTextPaths([...filterTextPaths.current, hitTextPath.current]);
+
+        setSelectedTextPath((prev) => {
+          let newOffset = prev.offset;
+          if (newOffset.x > hitTextPath.current.offset.x) newOffset.x = hitTextPath.current.offset.x;
+          if (newOffset.y < hitTextPath.current.offset.y) newOffset.y = hitTextPath.current.offset.y;
+
+          let newEndPoint = prev.endPoint;
+          if (newEndPoint.x < hitTextPath.current.endPoint.x) newEndPoint.x = hitTextPath.current.endPoint.x;
+          if (newEndPoint.y > hitTextPath.current.endPoint.y) newEndPoint.y = hitTextPath.current.endPoint.y;
+          return { ...prev, isSelected: true, offset: newOffset, endPoint: newEndPoint };
+        });
 
         return true;
       });
@@ -161,5 +175,5 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
-  return { canvas, canvasCtx, handleDown };
+  return { canvas, canvasCtx, selectedTextPath, handleDown };
 };
