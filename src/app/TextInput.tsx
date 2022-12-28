@@ -16,7 +16,7 @@ export const TextInput: FC<{
         disabled={isLoading}
       />
       <button onClick={changeText2Path} disabled={isLoading}>
-        変換
+        追加
       </button>
     </div>
   );
