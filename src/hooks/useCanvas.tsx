@@ -1,25 +1,24 @@
 import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
 import { initialTextPath } from '../commons/initialTextPath';
+import { pathDraw } from '../commons/pathDraw';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { isSelectedReset } from '../commons/setTextPathsFn';
-import { System } from '../types/System';
 import { TextPath } from '../types/TextPath';
-import { useKeyboard } from './useKeyboard';
+import { useSystem } from './useSystem';
 
 type HooksArg = {
-  system: MutableRefObject<System>;
   textPaths: TextPath[];
   setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
 };
 
-export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
+export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const [selectedArea, setSelectedArea] = useState(initialTextPath);
+  const { system } = useSystem();
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
   let nowTextPaths: TextPath[] = [];
   const initialX = useRef(0);
   const initialY = useRef(0);
-
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
     if (canvas.current === null) return;
@@ -32,6 +31,30 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
       canvas.current.removeEventListener('mouseup', handleUp);
     };
   }, []);
+
+  useEffect(() => {
+    if (canvas.current === null) return;
+    if (canvasCtx.current === null) return;
+    if (textPaths === null) return;
+
+    canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: selectedArea,
+      offsetX: selectedArea.offset.x,
+      offsetY: selectedArea.offset.y,
+    });
+    textPaths.forEach((textPath, i) => {
+      if (canvasCtx.current === null) return;
+
+      pathDraw({
+        ctx: canvasCtx.current,
+        textPath,
+        offsetX: textPath.offset.x,
+        offsetY: textPath.offset.y,
+      });
+    });
+  }, [textPaths, selectedArea]);
 
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if (canvas.current === null) return;

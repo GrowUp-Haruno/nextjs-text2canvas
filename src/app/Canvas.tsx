@@ -1,9 +1,7 @@
 'use client';
-import { FC, memo, useEffect } from 'react';
-import { pathDraw } from '../commons/pathDraw';
+import { FC, memo } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
 import { useKeyboard } from '../hooks/useKeyboard';
-import { useSystem } from '../hooks/useSystem';
 import { TextPath } from '../types/TextPath';
 
 export const Canvas: FC<{
@@ -11,37 +9,12 @@ export const Canvas: FC<{
   isLoading: boolean;
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, isLoading, setTextPaths }) => {
-  const { system } = useSystem();
-  const { canvas, canvasCtx, selectedArea, handleDown, setSelectedArea } = useCanvas({
+  const { handleDown, setSelectedArea } = useCanvas({
     textPaths,
     setTextPaths,
-    system,
   });
 
   useKeyboard({ textPaths, setTextPaths, setSelectedArea });
-  useEffect(() => {
-    if (canvas.current === null) return;
-    if (canvasCtx.current === null) return;
-    if (textPaths === null) return;
-
-    canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: selectedArea,
-      offsetX: selectedArea.offset.x,
-      offsetY: selectedArea.offset.y,
-    });
-    textPaths.forEach((textPath, i) => {
-      if (canvasCtx.current === null) return;
-
-      pathDraw({
-        ctx: canvasCtx.current,
-        textPath,
-        offsetX: textPath.offset.x,
-        offsetY: textPath.offset.y,
-      });
-    });
-  }, [textPaths, selectedArea]);
 
   return (
     <div>
