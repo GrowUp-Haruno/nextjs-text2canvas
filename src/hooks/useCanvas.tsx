@@ -178,11 +178,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     if (isMovableY) initialY.current = clickPositionY;
 
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
-    // setSelectedArea();
-    // setSelectedTextPath((prev) => {
-    //   const newPosition = getNewPosition({ prev: initialTextPath, textPath: hitTextPath.current });
-    //   return { ...prev, isSelected: true, offset: newPosition.offset, endPoint: newPosition.endPoint };
-    // });
+    setSelectedArea(getNewSelectedArea(newSelectedPaths));
   }
 
   function handleUp(event: MouseEvent) {

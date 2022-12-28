@@ -19,6 +19,12 @@ export const Canvas: FC<{
     if (textPaths === null) return;
 
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: selectedArea,
+      offsetX: selectedArea.offset.x,
+      offsetY: selectedArea.offset.y,
+    });
     textPaths.forEach((textPath, i) => {
       if (canvasCtx.current === null) return;
 
@@ -28,12 +34,6 @@ export const Canvas: FC<{
         offsetX: textPath.offset.x,
         offsetY: textPath.offset.y,
       });
-    });
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: selectedArea,
-      offsetX: selectedArea.offset.x,
-      offsetY: selectedArea.offset.y,
     });
   }, [textPaths, selectedArea]);
 
