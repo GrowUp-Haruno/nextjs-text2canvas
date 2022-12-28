@@ -1,6 +1,6 @@
 import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
 import { initialTextPath } from '../commons/initialTextPath';
-import { getNewPosition } from '../commons/setSelectedTextPath';
+import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { isSelectedReset } from '../commons/setTextPathsFn';
 import { System } from '../types/System';
 import { TextPath } from '../types/TextPath';
@@ -12,10 +12,11 @@ type HooksArg = {
 };
 
 export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
-  // const [selectedTextPath, setSelectedTextPath] = useState(initialTextPath);
+  const [selectedArea, setSelectedArea] = useState(initialTextPath);
 
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
+  let nowTextPaths: TextPath[] = [];
 
   const initialX = useRef(0);
   const initialY = useRef(0);
@@ -35,7 +36,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if (canvas.current === null) return;
-
+    nowTextPaths = textPaths;
     const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
     const clickPositionY = event.pageY - event.currentTarget.offsetTop;
     initialX.current = clickPositionX;
@@ -71,14 +72,15 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
     hitTextPath.isSelected = true;
     const unHitTextPaths = textPaths.filter((_, i) => i !== hitIndex);
-    
+
     const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
     const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
     if (pressedMacCommandKey || pressedWinControlKey) {
       const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
       const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
-      setTextPaths([...unSelectedTextPaths, ...selectedTextPaths, hitTextPath]);
-
+      nowTextPaths = [...unSelectedTextPaths, ...selectedTextPaths, hitTextPath];
+      setTextPaths(nowTextPaths);
+      setSelectedArea(getNewSelectedArea([...selectedTextPaths, hitTextPath]));
       canvas.current.addEventListener('mousemove', handleMove);
       canvas.current.addEventListener('mouseup', handleUp);
       canvas.current.addEventListener('mouseout', handleOut);
@@ -86,7 +88,8 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     }
 
     const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
-    setTextPaths([...newUnHitTextPaths, hitTextPath]);
+    nowTextPaths = [...newUnHitTextPaths, hitTextPath];
+    setTextPaths(nowTextPaths);
 
     canvas.current.addEventListener('mousemove', handleMove);
     canvas.current.addEventListener('mouseup', handleUp);
@@ -148,8 +151,8 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
   function handleMove(event: MouseEvent) {
     if (canvas.current === null) return;
 
-    const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
-    const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
+    const selectedTextPaths = nowTextPaths.filter((textPath) => textPath.isSelected === true);
+    const unSelectedTextPaths = nowTextPaths.filter((textPath) => textPath.isSelected === false);
 
     const rect = canvas.current.getBoundingClientRect();
     const clickPositionX = event.x - Math.floor(rect.x);
@@ -173,6 +176,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     if (isMovableY) initialY.current = clickPositionY;
 
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
+    // setSelectedArea();
     // setSelectedTextPath((prev) => {
     //   const newPosition = getNewPosition({ prev: initialTextPath, textPath: hitTextPath.current });
     //   return { ...prev, isSelected: true, offset: newPosition.offset, endPoint: newPosition.endPoint };
@@ -194,5 +198,5 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
-  return { canvas, canvasCtx, handleDown };
+  return { canvas, canvasCtx, selectedArea, handleDown };
 };
