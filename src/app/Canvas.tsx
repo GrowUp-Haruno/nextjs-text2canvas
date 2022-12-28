@@ -2,6 +2,7 @@
 import { FC, memo, useEffect } from 'react';
 import { pathDraw } from '../commons/pathDraw';
 import { useCanvas } from '../hooks/useCanvas';
+import { useKeyboard } from '../hooks/useKeyboard';
 import { useSystem } from '../hooks/useSystem';
 import { TextPath } from '../types/TextPath';
 
@@ -11,8 +12,13 @@ export const Canvas: FC<{
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, isLoading, setTextPaths }) => {
   const { system } = useSystem();
-  const { canvas, canvasCtx, selectedArea, handleDown } = useCanvas({ textPaths, setTextPaths, system });
+  const { canvas, canvasCtx, selectedArea, handleDown, setSelectedArea } = useCanvas({
+    textPaths,
+    setTextPaths,
+    system,
+  });
 
+  useKeyboard({ textPaths, setTextPaths, setSelectedArea });
   useEffect(() => {
     if (canvas.current === null) return;
     if (canvasCtx.current === null) return;

@@ -4,6 +4,7 @@ import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { isSelectedReset } from '../commons/setTextPathsFn';
 import { System } from '../types/System';
 import { TextPath } from '../types/TextPath';
+import { useKeyboard } from './useKeyboard';
 
 type HooksArg = {
   system: MutableRefObject<System>;
@@ -13,11 +14,9 @@ type HooksArg = {
 
 export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
   const [selectedArea, setSelectedArea] = useState(initialTextPath);
-
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
   let nowTextPaths: TextPath[] = [];
-
   const initialX = useRef(0);
   const initialY = useRef(0);
 
@@ -57,6 +56,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
     if (hitTextPath === undefined) {
       setTextPaths(isSelectedReset);
+      setSelectedArea(initialTextPath);
       canvas.current.addEventListener('mousemove', handleDrag);
       canvas.current.addEventListener('mouseup', handleUp);
       canvas.current.addEventListener('mouseout', handleOut);
@@ -64,6 +64,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     }
 
     if (hitTextPath.isSelected === true) {
+      // setSelectedArea(initialTextPath);
       canvas.current.addEventListener('mousemove', handleMove);
       canvas.current.addEventListener('mouseup', handleUp);
       canvas.current.addEventListener('mouseout', handleOut);
@@ -196,5 +197,5 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
-  return { canvas, canvasCtx, selectedArea, handleDown };
+  return { canvas, canvasCtx, selectedArea, handleDown, setSelectedArea };
 };
