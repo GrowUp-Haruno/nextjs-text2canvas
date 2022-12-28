@@ -1,9 +1,10 @@
 import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
 import { initialTextPath } from '../commons/initialTextPath';
 import { pathDraw } from '../commons/pathDraw';
+import { getDraggeddArea } from '../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
-import { isSelectedReset } from '../commons/setTextPathsFn';
-import { TextPath } from '../types/TextPath';
+import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
+import { TextPath, Coordinates } from '../types/TextPath';
 import { useSystem } from './useSystem';
 
 type HooksArg = {
@@ -13,12 +14,14 @@ type HooksArg = {
 
 export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const [selectedArea, setSelectedArea] = useState(initialTextPath);
+  const [draggedArea, setDraggeddArea] = useState(initialTextPath);
   const { system } = useSystem();
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const canvasCtx = useRef<CanvasRenderingContext2D | null>(null);
   let nowTextPaths: TextPath[] = [];
-  const initialX = useRef(0);
-  const initialY = useRef(0);
+  const originX = useRef(0);
+  const originY = useRef(0);
+
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
     if (canvas.current === null) return;
@@ -40,6 +43,13 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
     pathDraw({
       ctx: canvasCtx.current,
+      textPath: draggedArea,
+      offsetX: draggedArea.offset.x,
+      offsetY: draggedArea.offset.y,
+      padding: 0,
+    });
+    pathDraw({
+      ctx: canvasCtx.current,
       textPath: selectedArea,
       offsetX: selectedArea.offset.x,
       offsetY: selectedArea.offset.y,
@@ -54,15 +64,16 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         offsetY: textPath.offset.y,
       });
     });
-  }, [textPaths, selectedArea]);
+  }, [textPaths, selectedArea, draggedArea]);
 
+  // path単体選択
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if (canvas.current === null) return;
     nowTextPaths = textPaths;
     const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
     const clickPositionY = event.pageY - event.currentTarget.offsetTop;
-    initialX.current = clickPositionX;
-    initialY.current = clickPositionY;
+    originX.current = clickPositionX;
+    originY.current = clickPositionY;
 
     let hitIndex = -1;
     const hitTextPath = textPaths
@@ -121,59 +132,25 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     canvas.current.addEventListener('mouseout', handleOut);
   }
 
+  // path範囲選択
   function handleDrag(event: MouseEvent) {
     if (canvas.current === null) return;
 
     const rect = canvas.current.getBoundingClientRect();
-    const distanceOriginToDrag_X = event.x - Math.floor(rect.x) - initialX.current;
-    const distanceOriginToDrag_Y = event.y - Math.floor(rect.y) - initialY.current;
+    const distanceOriginToDrag: Coordinates = {
+      x: event.x - Math.floor(rect.x) - originX.current,
+      y: event.y - Math.floor(rect.y) - originY.current,
+    };
+    const origin: Coordinates = { x: originX.current, y: originY.current };
+    const drag: Coordinates = { x: event.x - Math.floor(rect.x), y: event.y - Math.floor(rect.y) };
 
-    const newTextPath = textPaths.map((textPath) => {
-      const distanceOriginToOffset_X = textPath.offset.x - initialX.current;
-      const distanceOriginToOffset_Y = textPath.offset.y - initialY.current;
-      const distanceOriginToEndpoint_X = textPath.endPoint.x - initialX.current;
-      const distanceOriginToEndpoint_Y = textPath.endPoint.y - initialY.current;
-
-      const isBetweenOffsetToEndpoint_X = distanceOriginToOffset_X < 0 && distanceOriginToEndpoint_X > 0;
-      const isBetweenOffsetToEndpoint_Y = distanceOriginToOffset_Y > 0 && distanceOriginToEndpoint_Y < 0;
-
-      let isDragLongerThanOffset_X = false;
-      if (distanceOriginToOffset_X < 0) isDragLongerThanOffset_X = -distanceOriginToDrag_X > -distanceOriginToOffset_X;
-      if (distanceOriginToOffset_X >= 0) isDragLongerThanOffset_X = distanceOriginToDrag_X > distanceOriginToOffset_X;
-
-      let isDragLongerThanOffset_Y = false;
-      if (distanceOriginToOffset_Y < 0) isDragLongerThanOffset_Y = -distanceOriginToDrag_Y > -distanceOriginToOffset_Y;
-      if (distanceOriginToOffset_Y >= 0) isDragLongerThanOffset_Y = distanceOriginToDrag_Y > distanceOriginToOffset_Y;
-
-      let isDragLongerThanEndpoint_X = false;
-      if (distanceOriginToEndpoint_X < 0)
-        isDragLongerThanEndpoint_X = -distanceOriginToDrag_X > -distanceOriginToEndpoint_X;
-      if (distanceOriginToEndpoint_X >= 0)
-        isDragLongerThanEndpoint_X = distanceOriginToDrag_X > distanceOriginToEndpoint_X;
-
-      let isDragLongerThanEndpoint_Y = false;
-      if (distanceOriginToEndpoint_Y < 0)
-        isDragLongerThanEndpoint_Y = -distanceOriginToDrag_Y > -distanceOriginToEndpoint_Y;
-      if (distanceOriginToEndpoint_Y >= 0)
-        isDragLongerThanEndpoint_Y = distanceOriginToDrag_Y > distanceOriginToEndpoint_Y;
-
-      textPath.isSelected = false;
-      if (isBetweenOffsetToEndpoint_X && isDragLongerThanOffset_Y) textPath.isSelected = true;
-      if (isBetweenOffsetToEndpoint_X && isDragLongerThanEndpoint_Y) textPath.isSelected = true;
-      if (isBetweenOffsetToEndpoint_Y && isDragLongerThanOffset_X) textPath.isSelected = true;
-      if (isBetweenOffsetToEndpoint_Y && isDragLongerThanEndpoint_X) textPath.isSelected = true;
-
-      if (isDragLongerThanOffset_X && isDragLongerThanOffset_Y) textPath.isSelected = true;
-      if (isDragLongerThanOffset_X && isDragLongerThanEndpoint_Y) textPath.isSelected = true;
-      if (isDragLongerThanEndpoint_X && isDragLongerThanEndpoint_Y) textPath.isSelected = true;
-      if (isDragLongerThanEndpoint_X && isDragLongerThanOffset_Y) textPath.isSelected = true;
-
-      return textPath;
-    });
-    setTextPaths(newTextPath);
-    setSelectedArea(getNewSelectedArea(newTextPath));
+    const newTextPaths = getNewTextPaths({ distanceOriginToDrag, origin, textPaths });
+    setTextPaths(newTextPaths);
+    setSelectedArea(getNewSelectedArea(newTextPaths));
+    setDraggeddArea(getDraggeddArea({ distanceOriginToDrag, origin, drag }));
   }
 
+  // path移動
   function handleMove(event: MouseEvent) {
     if (canvas.current === null) return;
 
@@ -188,18 +165,18 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
       if (isMovableX) {
-        selectedTextPath.offset.x += clickPositionX - initialX.current;
-        selectedTextPath.endPoint.x += clickPositionX - initialX.current;
+        selectedTextPath.offset.x += clickPositionX - originX.current;
+        selectedTextPath.endPoint.x += clickPositionX - originX.current;
       }
       if (isMovableY) {
-        selectedTextPath.offset.y += clickPositionY - initialY.current;
-        selectedTextPath.endPoint.y += clickPositionY - initialY.current;
+        selectedTextPath.offset.y += clickPositionY - originY.current;
+        selectedTextPath.endPoint.y += clickPositionY - originY.current;
       }
       return selectedTextPath;
     });
 
-    if (isMovableX) initialX.current = clickPositionX;
-    if (isMovableY) initialY.current = clickPositionY;
+    if (isMovableX) originX.current = clickPositionX;
+    if (isMovableY) originY.current = clickPositionY;
 
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
     setSelectedArea(getNewSelectedArea(newSelectedPaths));
@@ -207,6 +184,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   function handleUp(event: MouseEvent) {
     if (canvas.current === null) return;
+    setDraggeddArea(initialTextPath);
     canvas.current.removeEventListener('mousemove', handleMove);
     canvas.current.removeEventListener('mousemove', handleDrag);
     canvas.current.removeEventListener('mouseout', handleOut);
@@ -215,10 +193,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   function handleOut(event: MouseEvent) {
     if (canvas.current === null) return;
+    setDraggeddArea(initialTextPath);
     canvas.current.removeEventListener('mousemove', handleMove);
     canvas.current.removeEventListener('mousemove', handleDrag);
     canvas.current.removeEventListener('mouseup', handleUp);
     canvas.current.removeEventListener('mouseout', handleOut);
   }
-  return { canvas, canvasCtx, selectedArea, handleDown, setSelectedArea };
+
+  return { handleDown, setSelectedArea };
 };

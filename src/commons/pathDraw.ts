@@ -5,11 +5,13 @@ export function pathDraw({
   textPath,
   offsetX,
   offsetY,
+  padding = 4,
 }: {
   ctx: CanvasRenderingContext2D;
   textPath: TextPath;
   offsetX: number;
   offsetY: number;
+  padding?: number;
 }) {
   ctx.save();
   ctx.beginPath();
@@ -49,7 +51,7 @@ export function pathDraw({
 
   if (textPath.isSelected) {
     ctx.beginPath();
-    const padding = 4;
+    // const padding = 4;
     const x = textPath.offset.x - padding;
     const y = textPath.endPoint.y - padding;
     const w = textPath.endPoint.x - x + padding;

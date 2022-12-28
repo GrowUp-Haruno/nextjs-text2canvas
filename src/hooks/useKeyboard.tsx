@@ -20,8 +20,6 @@ export const useKeyboard: CustomHooks = ({ textPaths, setTextPaths, setSelectedA
   }, [textPaths]);
 
   const handleKeyup = (event: KeyboardEvent) => {
-    console.log(event.key);
-
     if (event.key === 'Escape') {
       setTextPaths(isSelectedReset);
       setSelectedArea(initialTextPath);
