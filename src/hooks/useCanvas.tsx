@@ -73,6 +73,7 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
     hitTextPath.isSelected = true;
     const unHitTextPaths = textPaths.filter((_, i) => i !== hitIndex);
 
+    // ctrlキーによる複数選択
     const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
     const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
     if (pressedMacCommandKey || pressedWinControlKey) {
@@ -145,7 +146,8 @@ export const useCanvas = ({ system, textPaths, setTextPaths }: HooksArg) => {
 
       return textPath;
     });
-    setTextPaths([...newTextPath]);
+    setTextPaths(newTextPath);
+    setSelectedArea(getNewSelectedArea(newTextPath));
   }
 
   function handleMove(event: MouseEvent) {
