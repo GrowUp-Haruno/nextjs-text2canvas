@@ -11,7 +11,9 @@ export const getTextPath = async (text: string): Promise<TextPath> => {
 
   if (!res.ok) throw new Error('フェッチに失敗しました');
 
-  const { textPath } = (await res.json()) as {textPath: TextPath };
+  const { textPath } = (await res.json()) as { textPath: TextPath };
+  textPath.path2D = new Path2D();
+  textPath.selectedPath2D = new Path2D();
 
   return textPath;
 };
