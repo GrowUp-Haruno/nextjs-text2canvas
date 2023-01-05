@@ -1,4 +1,6 @@
 import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
+import { getPath2D } from '../commons/getPath2D';
+import { getSelectedPath2D } from '../commons/getSelectedPath2D';
 import { initialTextPath } from '../commons/initialTextPath';
 import { pathDraw } from '../commons/pathDraw';
 import { getDraggeddArea } from '../commons/setDraggeddArea';
@@ -172,6 +174,10 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         selectedTextPath.offset.y += clickPositionY - originY.current;
         selectedTextPath.endPoint.y += clickPositionY - originY.current;
       }
+      
+      selectedTextPath.path2D = getPath2D(selectedTextPath);
+      selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
+
       return selectedTextPath;
     });
 
