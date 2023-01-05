@@ -6,9 +6,8 @@ import { TextPath } from '../types/TextPath';
 
 export const Canvas: FC<{
   textPaths: TextPath[];
-  isLoading: boolean;
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
-}> = memo(({ textPaths, isLoading, setTextPaths }) => {
+}> = memo(({ textPaths, setTextPaths }) => {
   const { handleDown, setSelectedArea } = useCanvas({
     textPaths,
     setTextPaths,
@@ -18,12 +17,10 @@ export const Canvas: FC<{
 
   return (
     <div>
-      {isLoading && <p>通信中...</p>}
       <canvas
         id="canvas"
         onMouseDown={handleDown}
         style={{
-          display: isLoading ? 'none' : undefined,
           backgroundColor: '#E6E6E6',
         }}
         width={500}
