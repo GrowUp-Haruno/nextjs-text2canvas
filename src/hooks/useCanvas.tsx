@@ -47,22 +47,24 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       pathDraw({
         ctx: canvasCtx.current,
         textPath,
-        // offsetX: textPath.offset.x,
-        // offsetY: textPath.offset.y,
       });
     });
 
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: selectedArea,
-    });
+    // pathDraw({
+    //   ctx: canvasCtx.current,
+    //   textPath: selectedArea,
+    // });
 
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: draggedArea,
-      padding: 0,
-    });
-  }, [textPaths, selectedArea, draggedArea]);
+    // pathDraw({
+    //   ctx: canvasCtx.current,
+    //   textPath: draggedArea,
+    //   padding: 0,
+    // });
+  }, [
+    textPaths,
+    selectedArea,
+    // draggedArea
+  ]);
 
   // path単体選択
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
