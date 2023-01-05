@@ -23,22 +23,17 @@ export const useTextToCanvas = () => {
     setInputText(() => e.target.value);
   };
 
-  /**
-   * Todo
-   * textPathをスタックしていく方式になっているので関数名を変更する
-   */
-  const changeText2Path: React.MouseEventHandler<HTMLButtonElement> = async () => {
+  const addText2Path: React.MouseEventHandler<HTMLButtonElement> = async () => {
     setIsLoading(true);
 
     const textPath: TextPath = await getTextPath(inputText);
     setTextPaths((prev) => {
-      const SHIFT_MAGNIFICATION: number = 8; //px
-      const shiftPosition = SHIFT_MAGNIFICATION * (prev.length + 1);
+      const SHIFT_POSITION = 8;
 
-      textPath.offset.x += shiftPosition;
-      textPath.offset.y += shiftPosition;
-      textPath.endPoint.x += shiftPosition;
-      textPath.endPoint.y += shiftPosition;
+      textPath.offset.x += SHIFT_POSITION;
+      textPath.offset.y += SHIFT_POSITION;
+      textPath.endPoint.x += SHIFT_POSITION;
+      textPath.endPoint.y += SHIFT_POSITION;
 
       return [...prev, textPath];
     });
@@ -47,5 +42,5 @@ export const useTextToCanvas = () => {
     setIsLoading(false);
   };
 
-  return { inputText, isLoading, textPaths, changeInput, changeText2Path, setTextPaths };
+  return { inputText, isLoading, textPaths, changeInput, addText2Path, setTextPaths };
 };
