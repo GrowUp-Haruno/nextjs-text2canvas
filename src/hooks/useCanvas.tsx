@@ -41,28 +41,26 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (textPaths === null) return;
 
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: draggedArea,
-      offsetX: draggedArea.offset.x,
-      offsetY: draggedArea.offset.y,
-      padding: 0,
-    });
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: selectedArea,
-      offsetX: selectedArea.offset.x,
-      offsetY: selectedArea.offset.y,
-    });
+
     textPaths.forEach((textPath, i) => {
       if (canvasCtx.current === null) return;
-
       pathDraw({
         ctx: canvasCtx.current,
         textPath,
-        offsetX: textPath.offset.x,
-        offsetY: textPath.offset.y,
+        // offsetX: textPath.offset.x,
+        // offsetY: textPath.offset.y,
       });
+    });
+
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: selectedArea,
+    });
+
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: draggedArea,
+      padding: 0,
     });
   }, [textPaths, selectedArea, draggedArea]);
 

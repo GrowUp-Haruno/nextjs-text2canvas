@@ -3,14 +3,10 @@ import { TextPath } from '../types/TextPath';
 export function pathDraw({
   ctx,
   textPath,
-  offsetX,
-  offsetY,
   padding = 4,
 }: {
   ctx: CanvasRenderingContext2D;
   textPath: TextPath;
-  offsetX: number;
-  offsetY: number;
   padding?: number;
 }) {
   ctx.save();
@@ -19,20 +15,25 @@ export function pathDraw({
   for (let i = 0; i < textPath.commands.length; i += 1) {
     const cmd = textPath.commands[i];
     if (cmd.type === 'M') {
-      ctx.moveTo(cmd.x + offsetX, cmd.y + offsetY);
+      ctx.moveTo(cmd.x + textPath.offset.x, cmd.y + textPath.offset.y);
     } else if (cmd.type === 'L') {
-      ctx.lineTo(cmd.x + offsetX, cmd.y + offsetY);
+      ctx.lineTo(cmd.x + textPath.offset.x, cmd.y + textPath.offset.y);
     } else if (cmd.type === 'C') {
       ctx.bezierCurveTo(
-        cmd.x1 + offsetX,
-        cmd.y1 + offsetY,
-        cmd.x2 + offsetX,
-        cmd.y2 + offsetY,
-        cmd.x + offsetX,
-        cmd.y + offsetY
+        cmd.x1 + textPath.offset.x,
+        cmd.y1 + textPath.offset.y,
+        cmd.x2 + textPath.offset.x,
+        cmd.y2 + textPath.offset.y,
+        cmd.x + textPath.offset.x,
+        cmd.y + textPath.offset.y
       );
     } else if (cmd.type === 'Q') {
-      ctx.quadraticCurveTo(cmd.x1 + offsetX, cmd.y1 + offsetY, cmd.x + offsetX, cmd.y + offsetY);
+      ctx.quadraticCurveTo(
+        cmd.x1 + textPath.offset.x,
+        cmd.y1 + textPath.offset.y,
+        cmd.x + textPath.offset.x,
+        cmd.y + textPath.offset.y
+      );
     } else if (cmd.type === 'Z') {
       ctx.closePath();
     }
@@ -51,7 +52,6 @@ export function pathDraw({
 
   if (textPath.isSelected) {
     ctx.beginPath();
-    // const padding = 4;
     const x = textPath.offset.x - padding;
     const y = textPath.endPoint.y - padding;
     const w = textPath.endPoint.x - x + padding;
