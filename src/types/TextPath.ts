@@ -3,8 +3,8 @@ export type TextPath = Path & {
   endPoint: Coordinates;
   text: string;
   isSelected: boolean;
-  path2D: Path2D;
-  selectedPath2D: Path2D;
+  path2D: Path2D|undefined;
+  selectedPath2D: Path2D|undefined;
 };
 
 export type Path = {

@@ -9,4 +9,6 @@ export const initialTextPath: TextPath = {
   isSelected: false,
   offset: { x: Infinity, y: -Infinity },
   endPoint: { x: -Infinity, y: Infinity },
+  path2D: undefined,
+  selectedPath2D: undefined,
 };
