@@ -82,10 +82,15 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       .slice()
       .reverse()
       .find((textPath, i) => {
-        if (clickPositionX < textPath.offset.x) return false;
-        if (clickPositionX > textPath.endPoint.x) return false;
-        if (clickPositionY < textPath.endPoint.y) return false;
-        if (clickPositionY > textPath.offset.y) return false;
+        // if (clickPositionX < textPath.offset.x) return false;
+        // if (clickPositionX > textPath.endPoint.x) return false;
+        // if (clickPositionY < textPath.endPoint.y) return false;
+        // if (clickPositionY > textPath.offset.y) return false;
+        if (canvasCtx.current === null) return false;
+        if (textPath.selectedPath2D === undefined) return false;
+        const isPointInPath = canvasCtx.current.isPointInPath(textPath.selectedPath2D, clickPositionX, clickPositionY);
+        if (!isPointInPath) return false;
+
         hitIndex = textPaths.length - i - 1;
         return true;
       });
@@ -174,7 +179,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         selectedTextPath.offset.y += clickPositionY - originY.current;
         selectedTextPath.endPoint.y += clickPositionY - originY.current;
       }
-      
+
       selectedTextPath.path2D = getPath2D(selectedTextPath);
       selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
 
