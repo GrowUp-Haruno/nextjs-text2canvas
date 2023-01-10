@@ -150,11 +150,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
     const origin: Coordinates = { x: originX.current, y: originY.current };
     const drag: Coordinates = { x: event.x - Math.floor(rect.x), y: event.y - Math.floor(rect.y) };
+    const dragArea = getDraggeddArea({ distanceOriginToDrag, origin, drag });
+    const newTextPaths = getNewTextPaths({ dragArea, textPaths });
 
-    const newTextPaths = getNewTextPaths({ distanceOriginToDrag, origin, textPaths });
     setTextPaths(newTextPaths);
     setSelectedArea(getNewSelectedArea(newTextPaths));
-    setDraggeddArea(getDraggeddArea({ distanceOriginToDrag, origin, drag }));
+    setDraggeddArea(dragArea);
   }
 
   // path移動
