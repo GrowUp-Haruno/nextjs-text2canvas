@@ -57,16 +57,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       textPath: selectedArea,
     });
 
-    // pathDraw({
-    //   ctx: canvasCtx.current,
-    //   textPath: draggedArea,
-    //   padding: 0,
-    // });
-  }, [
-    textPaths,
-    selectedArea,
-    // draggedArea
-  ]);
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: draggedArea,
+    });
+  }, [textPaths, selectedArea, draggedArea]);
 
   // path単体選択
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
@@ -150,12 +145,14 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
     const origin: Coordinates = { x: originX.current, y: originY.current };
     const drag: Coordinates = { x: event.x - Math.floor(rect.x), y: event.y - Math.floor(rect.y) };
-    const dragArea = getDraggeddArea({ distanceOriginToDrag, origin, drag });
-    const newTextPaths = getNewTextPaths({ dragArea, textPaths });
 
+    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin, drag });
+    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
+    const selectedArea = getNewSelectedArea(newTextPaths);
+
+    setDraggeddArea(draggedArea);
     setTextPaths(newTextPaths);
-    setSelectedArea(getNewSelectedArea(newTextPaths));
-    setDraggeddArea(dragArea);
+    setSelectedArea(selectedArea);
   }
 
   // path移動

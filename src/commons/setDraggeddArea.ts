@@ -1,4 +1,5 @@
 import { Coordinates, TextPath } from '../types/TextPath';
+import { getSelectedPath2D } from './getSelectedPath2D';
 import { initialTextPath } from './initialTextPath';
 
 export const getDraggeddArea = ({
@@ -23,10 +24,16 @@ export const getDraggeddArea = ({
   if (hasDragged_LeftUp) dragPoint = { offset: { x: drag.x, y: origin.y }, endPoint: { x: origin.x, y: drag.y } };
   if (hasDragged_LeftDown) dragPoint = { offset: { x: drag.x, y: drag.y }, endPoint: { x: origin.x, y: origin.y } };
 
-  return {
+  const newTextPath = {
     ...initialTextPath,
     isSelected: true,
     offset: { x: dragPoint.offset.x, y: dragPoint.offset.y },
     endPoint: { x: dragPoint.endPoint.x, y: dragPoint.endPoint.y },
+  };
+  const selectedPath2D = getSelectedPath2D({ textPath: newTextPath, padding: 0 });
+  
+  return {
+    ...newTextPath,
+    selectedPath2D,
   };
 };

@@ -12,10 +12,10 @@ export const isSelectedDelete = (textPaths: TextPath[]) => {
 
 export const getNewTextPaths = ({
   textPaths,
-  dragArea,
+  draggedArea,
 }: {
   textPaths: TextPath[];
-  dragArea: TextPath;
+  draggedArea: TextPath;
 
   // origin: Coordinates;
   // distanceOriginToDrag: Coordinates;
@@ -27,12 +27,12 @@ export const getNewTextPaths = ({
 
   const newTextPath = textPaths.map((textPath) => {
     const testPath2D = new Path2D(textPath.path2D);
-    const x = dragArea.offset.x;
-    const y = dragArea.endPoint.y;
+    const x = draggedArea.offset.x;
+    const y = draggedArea.endPoint.y;
     // w,hのうちどちらかが2未満の場合、ヒットの有無に関係なくisPointInPathが
     // falseになるため、各計算結果に２を加算する
-    const w = dragArea.endPoint.x - dragArea.offset.x + 2;
-    const h = dragArea.offset.y - dragArea.endPoint.y + 2;
+    const w = draggedArea.endPoint.x - draggedArea.offset.x + 2;
+    const h = draggedArea.offset.y - draggedArea.endPoint.y + 2;
     testPath2D.rect(x, y, w, h);
 
     let isPointInPaht = true;
