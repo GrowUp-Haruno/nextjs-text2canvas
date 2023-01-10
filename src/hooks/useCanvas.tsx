@@ -77,10 +77,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       .slice()
       .reverse()
       .find((textPath, i) => {
-        // if (clickPositionX < textPath.offset.x) return false;
-        // if (clickPositionX > textPath.endPoint.x) return false;
-        // if (clickPositionY < textPath.endPoint.y) return false;
-        // if (clickPositionY > textPath.offset.y) return false;
         if (canvasCtx.current === null) return false;
         if (textPath.selectedPath2D === undefined) return false;
         const isPointInPath = canvasCtx.current.isPointInPath(textPath.selectedPath2D, clickPositionX, clickPositionY);
