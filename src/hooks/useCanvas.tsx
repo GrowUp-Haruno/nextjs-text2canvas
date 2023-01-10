@@ -44,7 +44,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
 
-    textPaths.forEach((textPath, i) => {
+    textPaths.forEach((textPath) => {
       if (canvasCtx.current === null) return;
       pathDraw({
         ctx: canvasCtx.current,
@@ -52,10 +52,10 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       });
     });
 
-    // pathDraw({
-    //   ctx: canvasCtx.current,
-    //   textPath: selectedArea,
-    // });
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: selectedArea,
+    });
 
     // pathDraw({
     //   ctx: canvasCtx.current,
