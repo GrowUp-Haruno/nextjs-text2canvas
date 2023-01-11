@@ -29,19 +29,22 @@ export const useTextToCanvas = () => {
     setIsLoading(true);
 
     const textPath: TextPath = await getTextPath(inputText);
-    setTextPaths((prev) => {
-      const SHIFT_POSITION = 8;
+    const comandsExists = textPath.commands.length !== 0;
+    if (comandsExists) {
+      setTextPaths((prev) => {
+        const SHIFT_POSITION = 8;
 
-      textPath.offset.x += SHIFT_POSITION;
-      textPath.offset.y += SHIFT_POSITION;
-      textPath.endPoint.x += SHIFT_POSITION;
-      textPath.endPoint.y += SHIFT_POSITION;
+        textPath.offset.x += SHIFT_POSITION;
+        textPath.offset.y += SHIFT_POSITION;
+        textPath.endPoint.x += SHIFT_POSITION;
+        textPath.endPoint.y += SHIFT_POSITION;
 
-      textPath.path2D = getPath2D(textPath);
-      textPath.selectedPath2D = getSelectedPath2D({ textPath });
+        textPath.path2D = getPath2D(textPath);
+        textPath.selectedPath2D = getSelectedPath2D({ textPath });
 
-      return [...prev, textPath];
-    });
+        return [...prev, textPath];
+      });
+    }
 
     setInputText('');
     setIsLoading(false);
