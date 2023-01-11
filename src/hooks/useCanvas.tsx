@@ -1,4 +1,6 @@
 import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
+import { getPath2D } from '../commons/getPath2D';
+import { getSelectedPath2D } from '../commons/getSelectedPath2D';
 import { initialTextPath } from '../commons/initialTextPath';
 import { pathDraw } from '../commons/pathDraw';
 import { getDraggeddArea } from '../commons/setDraggeddArea';
@@ -41,28 +43,23 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (textPaths === null) return;
 
     canvasCtx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: draggedArea,
-      offsetX: draggedArea.offset.x,
-      offsetY: draggedArea.offset.y,
-      padding: 0,
-    });
-    pathDraw({
-      ctx: canvasCtx.current,
-      textPath: selectedArea,
-      offsetX: selectedArea.offset.x,
-      offsetY: selectedArea.offset.y,
-    });
-    textPaths.forEach((textPath, i) => {
-      if (canvasCtx.current === null) return;
 
+    textPaths.forEach((textPath) => {
+      if (canvasCtx.current === null) return;
       pathDraw({
         ctx: canvasCtx.current,
         textPath,
-        offsetX: textPath.offset.x,
-        offsetY: textPath.offset.y,
       });
+    });
+
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: selectedArea,
+    });
+
+    pathDraw({
+      ctx: canvasCtx.current,
+      textPath: draggedArea,
     });
   }, [textPaths, selectedArea, draggedArea]);
 
@@ -80,10 +77,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       .slice()
       .reverse()
       .find((textPath, i) => {
-        if (clickPositionX < textPath.offset.x) return false;
-        if (clickPositionX > textPath.endPoint.x) return false;
-        if (clickPositionY < textPath.endPoint.y) return false;
-        if (clickPositionY > textPath.offset.y) return false;
+        if (canvasCtx.current === null) return false;
+        if (textPath.selectedPath2D === undefined) return false;
+        const isPointInPath = canvasCtx.current.isPointInPath(textPath.selectedPath2D, clickPositionX, clickPositionY);
+        if (!isPointInPath) return false;
+
         hitIndex = textPaths.length - i - 1;
         return true;
       });
@@ -144,10 +142,13 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const origin: Coordinates = { x: originX.current, y: originY.current };
     const drag: Coordinates = { x: event.x - Math.floor(rect.x), y: event.y - Math.floor(rect.y) };
 
-    const newTextPaths = getNewTextPaths({ distanceOriginToDrag, origin, textPaths });
+    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin, drag });
+    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
+    const selectedArea = getNewSelectedArea(newTextPaths);
+
+    setDraggeddArea(draggedArea);
     setTextPaths(newTextPaths);
-    setSelectedArea(getNewSelectedArea(newTextPaths));
-    setDraggeddArea(getDraggeddArea({ distanceOriginToDrag, origin, drag }));
+    setSelectedArea(selectedArea);
   }
 
   // path移動
@@ -172,6 +173,10 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         selectedTextPath.offset.y += clickPositionY - originY.current;
         selectedTextPath.endPoint.y += clickPositionY - originY.current;
       }
+
+      selectedTextPath.path2D = getPath2D(selectedTextPath);
+      selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
+
       return selectedTextPath;
     });
 

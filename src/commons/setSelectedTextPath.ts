@@ -1,10 +1,11 @@
 import { TextPath } from '../types/TextPath';
+import { getSelectedPath2D } from './getSelectedPath2D';
 import { initialTextPath } from './initialTextPath';
 
 export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
   let offset = { x: Infinity, y: -Infinity };
   let endPoint = { x: -Infinity, y: Infinity };
-  
+
   const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
   if (selectedTextPaths.length === 1) return initialTextPath;
 
@@ -17,5 +18,7 @@ export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
     if (endPoint.x < textPath.endPoint.x) endPoint.x = textPath.endPoint.x;
     if (endPoint.y > textPath.endPoint.y) endPoint.y = textPath.endPoint.y;
   });
-  return { ...initialTextPath, isSelected: true, offset, endPoint };
+  const newTextPath = { ...initialTextPath, isSelected: true, offset, endPoint };
+  const selectedPath2D = getSelectedPath2D({ textPath: newTextPath });
+  return { ...newTextPath, selectedPath2D };
 }
