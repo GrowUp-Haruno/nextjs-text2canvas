@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { getPath2D } from '../commons/getPath2D';
+import { getSelectedPath2D } from '../commons/getSelectedPath2D';
 import { getTextPath } from '../commons/getTextPath';
 import { TextPath } from '../types/TextPath';
 
@@ -34,6 +36,9 @@ export const useTextToCanvas = () => {
       textPath.offset.y += SHIFT_POSITION;
       textPath.endPoint.x += SHIFT_POSITION;
       textPath.endPoint.y += SHIFT_POSITION;
+
+      textPath.path2D = getPath2D(textPath);
+      textPath.selectedPath2D = getSelectedPath2D({ textPath });
 
       return [...prev, textPath];
     });
