@@ -96,9 +96,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     },
     dragArea: {
       state: 'dragArea',
-      onMouseMove: () => {
-        console.log('dragArea change');
-      },
+      onMouseMove: dragArea_Move,
       onMouseUp: dragArea_Up,
       onMouseOut: dragArea_Out,
     },
@@ -107,7 +105,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     return canvasPropsList[action.state];
   };
   const [canvasProps, dispatchCanvasProps] = useReducer(canvasReducer, canvasPropsList['initial']);
-
   useEffect(() => {
     if (canvas.current === null) return;
     if (canvasCtx.current === null) return;
@@ -196,12 +193,29 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   }
 
   function dragArea_Move(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
-    
+    const drag: Coordinates = {
+      x: event.pageX - event.currentTarget.offsetLeft,
+      y: event.pageY - event.currentTarget.offsetTop,
+    };
+    const distanceOriginToDrag: Coordinates = {
+      x: drag.x - origin.current.x,
+      y: drag.y - origin.current.y,
+    };
+
+    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
+    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
+    const selectedArea = getNewSelectedArea(newTextPaths);
+
+    setDraggeddArea(draggedArea);
+    setTextPaths(newTextPaths);
+    setSelectedArea(selectedArea);
   }
   function dragArea_Out() {
+    setDraggeddArea(initialTextPath);
     dispatchCanvasProps({ state: 'searchPath' });
   }
   function dragArea_Up() {
+    setDraggeddArea(initialTextPath);
     dispatchCanvasProps({ state: 'searchPath' });
   }
 
@@ -271,45 +285,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     // canvas.current.addEventListener('mouseup', handleUp);
     // canvas.current.addEventListener('mouseout', handleOut);
   }
-
-  // path範囲選択
-  // function handleDrag(event: MouseEvent) {
-  //   if (canvas.current === null) return;
-
-  //   const rect = canvas.current.getBoundingClientRect();
-  //   const distanceOriginToDrag: Coordinates = {
-  //     x: event.x - Math.floor(rect.x) - originX.current,
-  //     y: event.y - Math.floor(rect.y) - originY.current,
-  //   };
-  //   const origin: Coordinates = { x: originX.current, y: originY.current };
-  //   const drag: Coordinates = { x: event.x - Math.floor(rect.x), y: event.y - Math.floor(rect.y) };
-
-  //   const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin, drag });
-  //   const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
-  //   const selectedArea = getNewSelectedArea(newTextPaths);
-
-  //   setDraggeddArea(draggedArea);
-  //   setTextPaths(newTextPaths);
-  //   setSelectedArea(selectedArea);
-  // }
-
-  // function handleUp(event: MouseEvent) {
-  //   if (canvas.current === null) return;
-  //   setDraggeddArea(initialTextPath);
-  //   canvas.current.removeEventListener('mousemove', handleMove);
-  //   canvas.current.removeEventListener('mousemove', handleDrag);
-  //   canvas.current.removeEventListener('mouseout', handleOut);
-  //   canvas.current.removeEventListener('mouseup', handleUp);
-  // }
-
-  // function handleOut(event: MouseEvent) {
-  //   if (canvas.current === null) return;
-  //   setDraggeddArea(initialTextPath);
-  //   canvas.current.removeEventListener('mousemove', handleMove);
-  //   canvas.current.removeEventListener('mousemove', handleDrag);
-  //   canvas.current.removeEventListener('mouseup', handleUp);
-  //   canvas.current.removeEventListener('mouseout', handleOut);
-  // }
 
   return { canvasProps, setSelectedArea };
 };
