@@ -131,15 +131,22 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         hitTextPathIndex.current = textPaths.length - i - 1;
         return true;
       });
+
+    if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
+    else canvas.current.style.cursor = 'grab';
   }
   function searchPath_Down(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+    if (canvas.current === null) return;
+
     if (hitTextPath.current === undefined) {
       setTextPaths(isSelectedReset);
       setSelectedArea(initialTextPath);
       dispatchCanvasProps({ state: 'dragArea' });
       return;
     }
+
     if (hitTextPath.current.isSelected === true) {
+      canvas.current.style.cursor = 'grabbing';
       dispatchCanvasProps({ state: 'movePath' });
       return;
     }
@@ -160,6 +167,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       const nowTextPaths = [...newUnHitTextPaths, hitTextPath.current];
       setTextPaths(nowTextPaths);
     }
+    canvas.current.style.cursor = 'grabbing';
     dispatchCanvasProps({ state: 'movePath' });
   }
 
@@ -195,9 +203,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setSelectedArea(getNewSelectedArea(newSelectedPaths));
   }
   function movePath_Out() {
+    if (canvas.current !== null) canvas.current.style.cursor = 'grab';
     dispatchCanvasProps({ state: 'searchPath' });
   }
   function movePath_Up() {
+    if (canvas.current !== null) canvas.current.style.cursor = 'grab';
     dispatchCanvasProps({ state: 'searchPath' });
   }
 
