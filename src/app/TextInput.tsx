@@ -11,7 +11,7 @@ export const TextInput: FC<{
   const buttonDisabled = isLoading || inputText === '';
 
   return (
-    <div>
+    <div style={{display:"flex",flexDirection:"row",gap:"8px"}}>
       <input type="text" onChange={changeInput} value={inputText} disabled={isLoading} style={cursorStyle} />
       <button onClick={addText2Path} disabled={buttonDisabled} style={cursorStyle}>
         追加

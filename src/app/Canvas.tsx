@@ -26,11 +26,9 @@ export const Canvas: FC<{
         style={{
           backgroundColor: '#E6E6E6',
         }}
-        width={500}
-        height={300}
+        width={1000}
+        height={400}
       />
-      <p>Shiftキーを押すと上下移動</p>
-      <p>Shift + Altで左右移動</p>
     </div>
   );
 });
