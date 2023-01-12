@@ -8,7 +8,7 @@ export const Canvas: FC<{
   textPaths: TextPath[];
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, setTextPaths }) => {
-  const { handleDown, setSelectedArea } = useCanvas({
+  const { canvasProps, setSelectedArea } = useCanvas({
     textPaths,
     setTextPaths,
   });
@@ -19,15 +19,16 @@ export const Canvas: FC<{
     <div>
       <canvas
         id="canvas"
-        onMouseDown={handleDown}
+        onMouseDown={canvasProps.onMouseDown}
+        onMouseUp={canvasProps.onMouseUp}
+        onMouseMove={canvasProps.onMouseMove}
+        onMouseOut={canvasProps.onMouseOut}
         style={{
           backgroundColor: '#E6E6E6',
         }}
-        width={500}
-        height={300}
+        width={1000}
+        height={400}
       />
-      <p>Shiftキーを押すと上下移動</p>
-      <p>Shift + Altで左右移動</p>
     </div>
   );
 });
