@@ -1,4 +1,13 @@
-import { useEffect, useRef, Dispatch, SetStateAction, MutableRefObject, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  Dispatch,
+  SetStateAction,
+  MutableRefObject,
+  useState,
+  DOMAttributes,
+  useReducer,
+} from 'react';
 import { getPath2D } from '../commons/getPath2D';
 import { getSelectedPath2D } from '../commons/getSelectedPath2D';
 import { initialTextPath } from '../commons/initialTextPath';
@@ -24,6 +33,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const originX = useRef(0);
   const originY = useRef(0);
 
+  // canvas初期設定
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
     if (canvas.current === null) return;
@@ -37,6 +47,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
   }, []);
 
+  // 描画処理
   useEffect(() => {
     if (canvas.current === null) return;
     if (canvasCtx.current === null) return;
@@ -62,6 +73,33 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       textPath: draggedArea,
     });
   }, [textPaths, selectedArea, draggedArea]);
+
+  type CanvasState = 'initial' | 'searchPath' | 'movePath' | 'dragArea';
+  type CanvasProps = {
+    state: CanvasState;
+    onMouseMove?: DOMAttributes<HTMLCanvasElement>['onMouseLeave'];
+    onMouseDown?: DOMAttributes<HTMLCanvasElement>['onMouseDown'];
+    onMouseUp?: DOMAttributes<HTMLCanvasElement>['onMouseUp'];
+    onMouseOut?: DOMAttributes<HTMLCanvasElement>['onMouseOut'];
+  };
+  type CanvasPropsList = { [key in CanvasState]: CanvasProps };
+  const canvasPropsList: CanvasPropsList = {
+    initial: { state: 'initial' },
+    searchPath: { state: 'searchPath' },
+    movePath: { state: 'movePath' },
+    dragArea: { state: 'dragArea' },
+  };
+  const canvasReducer = (_: CanvasProps, action: { state: CanvasState }) => {
+    return canvasPropsList[action.state];
+  };
+  const [canvasProps, dispatchCanvasProps] = useReducer(canvasReducer, canvasPropsList['initial']);
+
+  useEffect(() => {
+    if (canvas.current === null) return;
+    if (canvasCtx.current === null) return;
+    if (canvasProps.state === 'initial') dispatchCanvasProps({ state: 'searchPath' });
+  }, [textPaths, canvasProps]);
+  console.log(canvasProps.state);
 
   // path単体選択
   function handleDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
