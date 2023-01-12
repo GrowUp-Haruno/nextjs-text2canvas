@@ -124,8 +124,10 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       .find((textPath, i) => {
         if (canvasCtx.current === null) return false;
         if (textPath.path2D === undefined) return false;
+        if (textPath.selectedPath2D === undefined) return false;
 
-        const isPointInPath = canvasCtx.current.isPointInPath(textPath.path2D, origin.current.x, origin.current.y);
+        const testPath = textPath.isSelected === true ? textPath.selectedPath2D : textPath.path2D;
+        const isPointInPath = canvasCtx.current.isPointInPath(testPath, origin.current.x, origin.current.y);
         if (!isPointInPath) return false;
 
         hitTextPathIndex.current = textPaths.length - i - 1;
