@@ -139,6 +139,16 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       });
   }
   function searchPath_Down(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+    if (hitTextPath.current === undefined) {
+      setTextPaths(isSelectedReset);
+      setSelectedArea(initialTextPath);
+      dispatchCanvasProps({ state: 'dragArea' });
+      return;
+    }
+    if (hitTextPath.current.isSelected === true) {
+      dispatchCanvasProps({ state: 'movePath' });
+      return;
+    }
     if (hitTextPath.current !== undefined) {
       hitTextPath.current.isSelected = true;
       const unHitTextPaths = textPaths.filter((_, i) => i !== hitTextPathIndex.current);
@@ -146,11 +156,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       const nowTextPaths = [...newUnHitTextPaths, hitTextPath.current];
       setTextPaths(nowTextPaths);
       dispatchCanvasProps({ state: 'movePath' });
-    }
-
-    if (hitTextPath.current === undefined) {
-      setTextPaths(isSelectedReset);
-      dispatchCanvasProps({ state: 'dragArea' });
     }
   }
 
@@ -280,10 +285,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
     nowTextPaths = [...newUnHitTextPaths, hitTextPath];
     setTextPaths(nowTextPaths);
-
-    // canvas.current.addEventListener('mousemove', handleMove);
-    // canvas.current.addEventListener('mouseup', handleUp);
-    // canvas.current.addEventListener('mouseout', handleOut);
   }
 
   return { canvasProps, setSelectedArea };
