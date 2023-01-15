@@ -19,10 +19,11 @@ export const Canvas: FC<{
     <div>
       <canvas
         id="canvas"
-        onMouseDown={canvasProps.onMouseDown}
-        onMouseUp={canvasProps.onMouseUp}
-        onMouseMove={canvasProps.onMouseMove}
-        onMouseOut={canvasProps.onMouseOut}
+        onPointerDown={canvasProps.onPointerDown}
+        onPointerUp={canvasProps.onPointerUp}
+        onPointerMove={canvasProps.onPointerMove}
+        onPointerOut={canvasProps.onPointerOut}
+        onPointerOver={canvasProps.onPointerOver}
         style={{
           backgroundColor: '#E6E6E6',
         }}
