@@ -3,11 +3,10 @@ import {
   useRef,
   Dispatch,
   SetStateAction,
-  MutableRefObject,
   useState,
   DOMAttributes,
   useReducer,
-  MouseEvent,
+  PointerEvent,
 } from 'react';
 import { getPath2D } from '../commons/getPath2D';
 import { getSelectedPath2D } from '../commons/getSelectedPath2D';
@@ -114,7 +113,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (canvasProps.state === 'searchPath') dispatchCanvasProps({ state: 'searchPath' });
   }, [textPaths]);
 
-  function searchPath_Move(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+  function searchPath_Move(event: PointerEvent<HTMLCanvasElement>) {
     if (canvas.current === null) return;
 
     origin.current.x = event.pageX - event.currentTarget.offsetLeft;
@@ -140,7 +139,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
     else canvas.current.style.cursor = 'grab';
   }
-  function searchPath_Down(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+  function searchPath_Down(event: PointerEvent<HTMLCanvasElement>) {
     if (canvas.current === null) return;
 
     if (hitTextPath.current === undefined) {
@@ -176,7 +175,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     dispatchCanvasProps({ state: 'movePath' });
   }
 
-  function movePath_Move(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+  function movePath_Move(event: PointerEvent<HTMLCanvasElement>) {
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
 
@@ -216,7 +215,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     dispatchCanvasProps({ state: 'searchPath' });
   }
 
-  function dragArea_Move(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+  function dragArea_Move(event: PointerEvent<HTMLCanvasElement>) {
     const drag: Coordinates = {
       x: event.pageX - event.currentTarget.offsetLeft,
       y: event.pageY - event.currentTarget.offsetTop,
@@ -242,7 +241,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     dispatchCanvasProps({ state: 'searchPath' });
   }
 
-  function mouvePathOver_Over(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+  function mouvePathOver_Over(event: PointerEvent<HTMLCanvasElement>) {
     if (canvas.current === null) return;
     if (event.buttons === 1) {
       canvas.current.style.cursor = 'grabbing';
@@ -251,7 +250,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       dispatchCanvasProps({ state: 'searchPath' });
     }
   }
-  function dragAreaOut_Over(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+  function dragAreaOut_Over(event: PointerEvent<HTMLCanvasElement>) {
     if (canvas.current === null) return;
     if (event.buttons === 1) {
       dispatchCanvasProps({ state: 'dragArea' });
