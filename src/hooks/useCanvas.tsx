@@ -253,7 +253,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   }
   function dragAreaOver_Move(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
     if (canvas.current === null) return;
-
     if (event.buttons === 1) {
       dispatchCanvasProps({ state: 'dragArea' });
     } else {
