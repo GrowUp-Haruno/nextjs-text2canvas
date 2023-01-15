@@ -68,13 +68,14 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     });
   }, [textPaths, selectedArea, draggedArea]);
 
-  type CanvasState = 'initial' | 'searchPath' | 'movePath' | 'dragArea';
+  type CanvasState = 'initial' | 'searchPath' | 'movePath' | 'dragArea' | 'movePathOver' | 'dragAreaOver';
   type CanvasProps = {
     state: CanvasState;
     onMouseMove?: DOMAttributes<HTMLCanvasElement>['onMouseLeave'];
     onMouseDown?: DOMAttributes<HTMLCanvasElement>['onMouseDown'];
     onMouseUp?: DOMAttributes<HTMLCanvasElement>['onMouseUp'];
     onMouseOut?: DOMAttributes<HTMLCanvasElement>['onMouseOut'];
+    onMOuseOver?: DOMAttributes<HTMLCanvasElement>['onMouseOver'];
   };
   type CanvasPropsList = { [key in CanvasState]: CanvasProps };
   const canvasPropsList: CanvasPropsList = {
@@ -96,6 +97,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       onMouseUp: dragArea_Up,
       onMouseOut: dragArea_Out,
     },
+    movePathOver: { state: 'movePathOver', onMouseMove: mouvePathOver_Move },
+    dragAreaOver: { state: 'dragAreaOver' },
   };
   const canvasReducer = (_: CanvasProps, action: { state: CanvasState }) => {
     return canvasPropsList[action.state];
@@ -205,8 +208,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setSelectedArea(getNewSelectedArea(newSelectedPaths));
   }
   function movePath_Out() {
-    if (canvas.current !== null) canvas.current.style.cursor = 'grab';
-    dispatchCanvasProps({ state: 'searchPath' });
+    if (canvas.current !== null) canvas.current.style.cursor = 'crosshair';
+    dispatchCanvasProps({ state: 'movePathOver' });
   }
   function movePath_Up() {
     if (canvas.current !== null) canvas.current.style.cursor = 'grab';
@@ -238,6 +241,16 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   function dragArea_Up() {
     setDraggeddArea(initialTextPath);
     dispatchCanvasProps({ state: 'searchPath' });
+  }
+
+  function mouvePathOver_Move(event: MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>) {
+    if (canvas.current === null) return;
+    if (event.buttons === 1) {
+      canvas.current.style.cursor = 'grabbing';
+      dispatchCanvasProps({ state: 'movePath' });
+    } else {
+      dispatchCanvasProps({ state: 'searchPath' });
+    }
   }
 
   return { canvasProps, setSelectedArea };
