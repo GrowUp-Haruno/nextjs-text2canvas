@@ -8,7 +8,7 @@ export const Canvas: FC<{
   textPaths: TextPath[];
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, setTextPaths }) => {
-  const { canvasProps, setSelectedArea } = useCanvas({
+  const { setSelectedArea } = useCanvas({
     textPaths,
     setTextPaths,
   });
@@ -19,11 +19,6 @@ export const Canvas: FC<{
     <div>
       <canvas
         id="canvas"
-        onPointerDown={canvasProps.onPointerDown}
-        onPointerUp={canvasProps.onPointerUp}
-        onPointerMove={canvasProps.onPointerMove}
-        onPointerOut={canvasProps.onPointerOut}
-        onPointerOver={canvasProps.onPointerOver}
         style={{
           backgroundColor: '#E6E6E6',
         }}

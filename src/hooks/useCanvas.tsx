@@ -1,13 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  Dispatch,
-  SetStateAction,
-  useState,
-  DOMAttributes,
-  useReducer,
-  PointerEvent,
-} from 'react';
+import { useEffect, useRef, Dispatch, SetStateAction, useState } from 'react';
 import { getPath2D } from '../commons/getPath2D';
 import { getSelectedPath2D } from '../commons/getSelectedPath2D';
 import { initialTextPath } from '../commons/initialTextPath';
@@ -22,6 +13,15 @@ type HooksArg = {
   textPaths: TextPath[];
   setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
 };
+
+type canvasEventKey = 'pointermove' | 'pointerdown' | 'pointerup' | 'pointerout' | 'pointerover';
+type CanvasEvent = (event: globalThis.PointerEvent) => any;
+type CanvasEvents = {
+  [key in canvasEventKey]?: CanvasEvent;
+};
+
+type CanvasState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
+type CanvasEventsList = { [key in CanvasState]: CanvasEvents };
 
 export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const [selectedArea, setSelectedArea] = useState(initialTextPath);
@@ -67,57 +67,47 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     });
   }, [textPaths, selectedArea, draggedArea]);
 
-  type CanvasState = 'initial' | 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
-  type CanvasProps = {
-    state: CanvasState;
-    onPointerMove?: DOMAttributes<HTMLCanvasElement>['onPointerLeave'];
-    onPointerDown?: DOMAttributes<HTMLCanvasElement>['onPointerDown'];
-    onPointerUp?: DOMAttributes<HTMLCanvasElement>['onPointerUp'];
-    onPointerOut?: DOMAttributes<HTMLCanvasElement>['onPointerOut'];
-    onPointerOver?: DOMAttributes<HTMLCanvasElement>['onPointerOver'];
-  };
-  type CanvasPropsList = { [key in CanvasState]: CanvasProps };
-  const canvasPropsList: CanvasPropsList = {
-    initial: { state: 'initial' },
+  const canvasEventList: CanvasEventsList = {
     searchPath: {
-      state: 'searchPath',
-      onPointerMove: searchPath_Move,
-      onPointerDown: searchPath_Down,
+      pointermove: searchPath_Move,
+      pointerdown: searchPath_Down,
     },
     movePath: {
-      state: 'movePath',
-      onPointerMove: movePath_Move,
-      onPointerUp: movePath_Up,
-      onPointerOut: movePath_Out,
+      pointermove: movePath_Move,
+      pointerup: movePath_Up,
+      pointerout: movePath_Out,
     },
     dragArea: {
-      state: 'dragArea',
-      onPointerMove: dragArea_Move,
-      onPointerUp: dragArea_Up,
-      onPointerOut: dragArea_Out,
+      pointermove: dragArea_Move,
+      pointerup: dragArea_Up,
+      pointerout: dragArea_Out,
     },
-    movePathOut: { state: 'movePathOut', onPointerOver: mouvePathOver_Over },
-    dragAreaOut: { state: 'dragAreaOut', onPointerOver: dragAreaOut_Over },
+    movePathOut: { pointerover: mouvePathOver_Over },
+    dragAreaOut: { pointerover: dragAreaOut_Over },
   };
-  const canvasReducer = (_: CanvasProps, action: { state: CanvasState }) => {
-    return canvasPropsList[action.state];
-  };
-  const [canvasProps, dispatchCanvasProps] = useReducer(canvasReducer, canvasPropsList['initial']);
+
+  const [canvasState, setCanvasState] = useState<CanvasState>('searchPath');
+
   useEffect(() => {
+    const addEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent][];
+    addEvents.forEach(([key, value]) => {
+      canvas.current?.addEventListener(key, value, false);
+    });
+
+    return () => {
+      const removeEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent][];
+      removeEvents.forEach(([key, value]) => {
+        canvas.current?.removeEventListener(key, value, false);
+      });
+    };
+  }, [textPaths, canvasState]);
+
+  function searchPath_Move(event: globalThis.PointerEvent) {
     if (canvas.current === null) return;
-    if (canvasCtx.current === null) return;
-    if (canvasProps.state === 'dragArea') return;
-    if (canvasProps.state === 'movePath') return;
+    const rect = canvas.current.getBoundingClientRect();
 
-    if (canvasProps.state === 'initial') dispatchCanvasProps({ state: 'searchPath' });
-    if (canvasProps.state === 'searchPath') dispatchCanvasProps({ state: 'searchPath' });
-  }, [textPaths]);
-
-  function searchPath_Move(event: PointerEvent<HTMLCanvasElement>) {
-    if (canvas.current === null) return;
-
-    origin.current.x = event.pageX - event.currentTarget.offsetLeft;
-    origin.current.y = event.pageY - event.currentTarget.offsetTop;
+    origin.current.x = Math.floor(event.pageX - rect.x);
+    origin.current.y = Math.floor(event.pageY - rect.y);
 
     hitTextPathIndex.current = -1;
     hitTextPath.current = textPaths
@@ -139,19 +129,19 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
     else canvas.current.style.cursor = 'grab';
   }
-  function searchPath_Down(event: PointerEvent<HTMLCanvasElement>) {
+  function searchPath_Down(event: globalThis.PointerEvent) {
     if (canvas.current === null) return;
 
     if (hitTextPath.current === undefined) {
       setTextPaths(isSelectedReset);
       setSelectedArea(initialTextPath);
-      dispatchCanvasProps({ state: 'dragArea' });
+      setCanvasState('dragArea');
       return;
     }
 
     if (hitTextPath.current.isSelected === true) {
       canvas.current.style.cursor = 'grabbing';
-      dispatchCanvasProps({ state: 'movePath' });
+      setCanvasState('movePath');
       return;
     }
 
@@ -172,15 +162,17 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       setTextPaths(nowTextPaths);
     }
     canvas.current.style.cursor = 'grabbing';
-    dispatchCanvasProps({ state: 'movePath' });
+    setCanvasState('movePath');
   }
 
-  function movePath_Move(event: PointerEvent<HTMLCanvasElement>) {
+  function movePath_Move(event: globalThis.PointerEvent) {
+    if (canvas.current === null) return;
+
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
-
-    const clickPositionX = event.pageX - event.currentTarget.offsetLeft;
-    const clickPositionY = event.pageY - event.currentTarget.offsetTop;
+    const rect = canvas.current.getBoundingClientRect();
+    const clickPositionX = Math.floor(event.pageX - rect.x);
+    const clickPositionY = Math.floor(event.pageY - rect.y);
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 
@@ -208,17 +200,19 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   }
   function movePath_Out() {
     if (canvas.current !== null) canvas.current.style.cursor = 'crosshair';
-    dispatchCanvasProps({ state: 'movePathOut' });
+    setCanvasState('movePathOut');
   }
   function movePath_Up() {
     if (canvas.current !== null) canvas.current.style.cursor = 'grab';
-    dispatchCanvasProps({ state: 'searchPath' });
+    setCanvasState('searchPath');
   }
 
-  function dragArea_Move(event: PointerEvent<HTMLCanvasElement>) {
+  function dragArea_Move(event: globalThis.PointerEvent) {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
-      x: event.pageX - event.currentTarget.offsetLeft,
-      y: event.pageY - event.currentTarget.offsetTop,
+      x: Math.floor(event.pageX - rect.x),
+      y: Math.floor(event.pageY - rect.y),
     };
     const distanceOriginToDrag: Coordinates = {
       x: drag.x - origin.current.x,
@@ -234,31 +228,31 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setSelectedArea(selectedArea);
   }
   function dragArea_Out() {
-    dispatchCanvasProps({ state: 'dragAreaOut' });
+    setCanvasState('dragAreaOut');
   }
   function dragArea_Up() {
     setDraggeddArea(initialTextPath);
-    dispatchCanvasProps({ state: 'searchPath' });
+    setCanvasState('searchPath');
   }
 
-  function mouvePathOver_Over(event: PointerEvent<HTMLCanvasElement>) {
+  function mouvePathOver_Over(event: globalThis.PointerEvent) {
     if (canvas.current === null) return;
     if (event.buttons === 1) {
       canvas.current.style.cursor = 'grabbing';
-      dispatchCanvasProps({ state: 'movePath' });
+      setCanvasState('movePath');
     } else {
-      dispatchCanvasProps({ state: 'searchPath' });
+      setCanvasState('searchPath');
     }
   }
-  function dragAreaOut_Over(event: PointerEvent<HTMLCanvasElement>) {
+  function dragAreaOut_Over(event: globalThis.PointerEvent) {
     if (canvas.current === null) return;
     if (event.buttons === 1) {
-      dispatchCanvasProps({ state: 'dragArea' });
+      setCanvasState('dragArea');
     } else {
       setDraggeddArea(initialTextPath);
-      dispatchCanvasProps({ state: 'searchPath' });
+      setCanvasState('searchPath');
     }
   }
 
-  return { canvasProps, setSelectedArea };
+  return { setSelectedArea };
 };
