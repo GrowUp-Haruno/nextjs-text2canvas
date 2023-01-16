@@ -1,13 +1,16 @@
+# 旧useCanvas
+
+```tsx
 import { useEffect, useRef, Dispatch, SetStateAction, useState } from 'react';
-import { getPath2D } from '../commons/getPath2D';
-import { getSelectedPath2D } from '../commons/getSelectedPath2D';
-import { initialTextPath } from '../commons/initialTextPath';
-import { pathDraw } from '../commons/pathDraw';
-import { getDraggeddArea } from '../commons/setDraggeddArea';
-import { getNewSelectedArea } from '../commons/setSelectedTextPath';
-import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
-import { TextPath, Coordinates } from '../types/TextPath';
-import { useSystem } from './useSystem';
+import { getPath2D } from '../src/commons/getPath2D';
+import { getSelectedPath2D } from '../src/commons/getSelectedPath2D';
+import { initialTextPath } from '../src/commons/initialTextPath';
+import { pathDraw } from '../src/commons/pathDraw';
+import { getDraggeddArea } from '../src/commons/setDraggeddArea';
+import { getNewSelectedArea } from '../src/commons/setSelectedTextPath';
+import { getNewTextPaths, isSelectedReset } from '../src/commons/setTextPathsFn';
+import { TextPath, Coordinates } from '../src/types/TextPath';
+import { useSystem } from '../src/hooks/useSystem';
 
 type HooksArg = {
   textPaths: TextPath[];
@@ -207,3 +210,4 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   return { handleDown, setSelectedArea };
 };
+```
