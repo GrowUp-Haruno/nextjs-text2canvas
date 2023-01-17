@@ -17,7 +17,7 @@ type HooksArg = {
 type canvasEventKey = 'pointermove' | 'pointerdown' | 'pointerup' | 'pointerout' | 'pointerover';
 type CanvasEvent = (event: globalThis.PointerEvent) => any;
 type CanvasEvents = {
-  [key in canvasEventKey]?: CanvasEvent;
+  [key in canvasEventKey]?: CanvasEvent[];
 };
 
 type CanvasState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
@@ -67,37 +67,40 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     });
   }, [textPaths, selectedArea, draggedArea]);
 
+  // Canvas上のイベントリスナ管理
   const canvasEventList: CanvasEventsList = {
     searchPath: {
-      pointermove: searchPath_Move,
-      pointerdown: searchPath_Down,
+      pointermove: [searchPath_Move],
+      pointerdown: [searchPath_Down],
     },
     movePath: {
-      pointermove: movePath_Move,
-      pointerup: movePath_Up,
-      pointerout: movePath_Out,
+      pointermove: [movePath_Move],
+      pointerup: [movePath_Up],
+      pointerout: [movePath_Out],
     },
     dragArea: {
-      pointermove: dragArea_Move,
-      pointerup: dragArea_Up,
-      pointerout: dragArea_Out,
+      pointermove: [dragArea_Move_AreaUpdate, dragArea_Move_HitTest],
+      pointerup: [dragArea_Up],
+      pointerout: [dragArea_Out],
     },
-    movePathOut: { pointerover: mouvePathOver_Over },
-    dragAreaOut: { pointerover: dragAreaOut_Over },
+    movePathOut: { pointerover: [mouvePathOver_Over] },
+    dragAreaOut: { pointerover: [dragAreaOut_Over] },
   };
-
   const [canvasState, setCanvasState] = useState<CanvasState>('searchPath');
-
   useEffect(() => {
-    const addEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent][];
-    addEvents.forEach(([key, value]) => {
-      canvas.current?.addEventListener(key, value, false);
+    const addEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent[]][];
+    addEvents.forEach(([key, values]) => {
+      values.forEach((value) => {
+        canvas.current?.addEventListener(key, value);
+      });
     });
 
     return () => {
-      const removeEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent][];
-      removeEvents.forEach(([key, value]) => {
-        canvas.current?.removeEventListener(key, value, false);
+      const removeEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent[]][];
+      removeEvents.forEach(([key, values]) => {
+        values.forEach((value) => {
+          canvas.current?.removeEventListener(key, value);
+        });
       });
     };
   }, [textPaths, canvasState]);
@@ -207,7 +210,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setCanvasState('searchPath');
   }
 
-  function dragArea_Move(event: globalThis.PointerEvent) {
+  function dragArea_Move_AreaUpdate(event: globalThis.PointerEvent) {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
@@ -220,10 +223,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
 
     const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
+    setDraggeddArea(draggedArea);
+  }
+  function dragArea_Move_HitTest(event: globalThis.PointerEvent) {
     const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
     const selectedArea = getNewSelectedArea(newTextPaths);
-
-    setDraggeddArea(draggedArea);
     setTextPaths(newTextPaths);
     setSelectedArea(selectedArea);
   }
