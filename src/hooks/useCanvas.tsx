@@ -67,6 +67,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     });
   }, [textPaths, selectedArea, draggedArea]);
 
+  // Canvas上のイベントリスナ管理
   const canvasEventList: CanvasEventsList = {
     searchPath: {
       pointermove: [searchPath_Move],
@@ -78,16 +79,14 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       pointerout: [movePath_Out],
     },
     dragArea: {
-      pointermove: [dragArea_Move],
+      pointermove: [dragArea_Move_AreaUpdate, dragArea_Move_HitTest],
       pointerup: [dragArea_Up],
       pointerout: [dragArea_Out],
     },
     movePathOut: { pointerover: [mouvePathOver_Over] },
     dragAreaOut: { pointerover: [dragAreaOut_Over] },
   };
-
   const [canvasState, setCanvasState] = useState<CanvasState>('searchPath');
-
   useEffect(() => {
     const addEvents = Object.entries(canvasEventList[canvasState]) as [canvasEventKey, CanvasEvent[]][];
     addEvents.forEach(([key, values]) => {
@@ -211,7 +210,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setCanvasState('searchPath');
   }
 
-  function dragArea_Move(event: globalThis.PointerEvent) {
+  function dragArea_Move_AreaUpdate(event: globalThis.PointerEvent) {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
@@ -224,10 +223,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
 
     const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
+    setDraggeddArea(draggedArea);
+  }
+  function dragArea_Move_HitTest(event: globalThis.PointerEvent) {
     const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
     const selectedArea = getNewSelectedArea(newTextPaths);
-
-    setDraggeddArea(draggedArea);
     setTextPaths(newTextPaths);
     setSelectedArea(selectedArea);
   }
