@@ -7,7 +7,7 @@ import { getDraggeddArea } from '../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath, Coordinates } from '../types/TextPath';
-import { EventsList, EventState, useEventListener } from './useEventListener';
+import { EventsList, useEventListener } from './useEventListener';
 import { useSystem } from './useSystem';
 
 type HooksArg = {
@@ -60,7 +60,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   }, [textPaths, selectedArea, draggedArea]);
 
   // Canvas上のイベントリスナ管理
-  const eventList: EventsList = {
+  type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
+  const eventList: EventsList<EventState> = {
     searchPath: {
       canvas: {
         pointermove: [searchPath_Move],

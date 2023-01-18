@@ -6,10 +6,13 @@ type EventSetting = { [key in EventType]?: EventListener[] };
 type ElementId = 'canvas' | 'page';
 type EventListEntries = [ElementId, EventSetting][];
 type EventSettingEntries = [EventType, EventListener[]][];
-export type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
-export type EventsList = { [key in EventState]: { [id in ElementId]?: EventSetting } };
+export type EventsList<EventState extends string> = { [key in EventState]: { [id in ElementId]?: EventSetting } };
 
-export const useEventListener = (eventList: EventsList, eventState: EventState, deps?: DependencyList | undefined) => {
+export const useEventListener = <EventState extends string>(
+  eventList: EventsList<EventState>,
+  eventState: EventState,
+  deps?: DependencyList | undefined
+) => {
   useEffect(() => {
     eventListenerManagement('addEventListener', eventList, eventState);
     return () => {
@@ -18,9 +21,9 @@ export const useEventListener = (eventList: EventsList, eventState: EventState, 
   }, deps);
 };
 
-function eventListenerManagement(
+function eventListenerManagement<EventState extends string>(
   eventManagementType: 'addEventListener' | 'removeEventListener',
-  eventList: EventsList,
+  eventList: EventsList<EventState>,
   eventState: EventState
 ) {
   const eventListEntries = Object.entries(eventList[eventState]) as EventListEntries;
