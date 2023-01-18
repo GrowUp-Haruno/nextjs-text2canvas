@@ -61,7 +61,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   // Canvas上のイベントリスナ管理
   type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
-  const eventList: EventsList<EventState> = {
+  type ElementId = 'canvas' | 'page';
+  const eventList: EventsList<EventState, ElementId> = {
     searchPath: {
       canvas: {
         pointermove: [searchPath_Move],

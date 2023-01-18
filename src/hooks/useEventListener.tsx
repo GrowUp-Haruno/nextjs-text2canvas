@@ -3,13 +3,14 @@ import { DependencyList, useEffect } from 'react';
 type EventType = 'pointermove' | 'pointerdown' | 'pointerup' | 'pointerout' | 'pointerover';
 type EventListener = (event: globalThis.PointerEvent) => any;
 type EventSetting = { [key in EventType]?: EventListener[] };
-type ElementId = 'canvas' | 'page';
-type EventListEntries = [ElementId, EventSetting][];
+type EventListEntries<ElementId extends string> = [ElementId, EventSetting][];
 type EventSettingEntries = [EventType, EventListener[]][];
-export type EventsList<EventState extends string> = { [key in EventState]: { [id in ElementId]?: EventSetting } };
+export type EventsList<EventState extends string, ElementId extends string> = {
+  [key in EventState]: { [id in ElementId]?: EventSetting };
+};
 
-export const useEventListener = <EventState extends string>(
-  eventList: EventsList<EventState>,
+export const useEventListener = <EventState extends string, ElementId extends string>(
+  eventList: EventsList<EventState, ElementId>,
   eventState: EventState,
   deps?: DependencyList | undefined
 ) => {
@@ -21,12 +22,12 @@ export const useEventListener = <EventState extends string>(
   }, deps);
 };
 
-function eventListenerManagement<EventState extends string>(
+function eventListenerManagement<EventState extends string, ElementId extends string>(
   eventManagementType: 'addEventListener' | 'removeEventListener',
-  eventList: EventsList<EventState>,
+  eventList: EventsList<EventState, ElementId>,
   eventState: EventState
 ) {
-  const eventListEntries = Object.entries(eventList[eventState]) as EventListEntries;
+  const eventListEntries = Object.entries(eventList[eventState]) as EventListEntries<ElementId>;
   eventListEntries.forEach(([elementId, eventSetting]) => {
     const element = document.getElementById(elementId);
     const eventSettingEntries = Object.entries(eventSetting) as EventSettingEntries;
