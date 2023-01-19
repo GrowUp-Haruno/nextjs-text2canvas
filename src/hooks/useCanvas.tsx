@@ -7,18 +7,13 @@ import { getDraggeddArea } from '../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath, Coordinates } from '../types/TextPath';
+import { EventList, EventListener, useEventListener } from './useEventListener';
 import { useSystem } from './useSystem';
 
 type HooksArg = {
   textPaths: TextPath[];
   setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
 };
-type EventType = 'pointermove' | 'pointerdown' | 'pointerup' | 'pointerout' | 'pointerover';
-type EventListener = (event: globalThis.PointerEvent) => any;
-type EventSetting = { [key in EventType]?: EventListener[] };
-type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
-type ElementId = 'canvas' | 'page';
-type EventsList = { [key in EventState]: { [elementKey in ElementId]?: EventSetting } };
 
 export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const [selectedArea, setSelectedArea] = useState(initialTextPath);
@@ -64,49 +59,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     });
   }, [textPaths, selectedArea, draggedArea]);
 
-  // Canvas上のイベントリスナ管理
-  const eventList: EventsList = {
-    searchPath: {
-      canvas: {
-        pointermove: [searchPath_Move],
-        pointerdown: [searchPath_Down],
-      },
-    },
-    movePath: {
-      canvas: {
-        pointermove: [movePath_Move],
-        pointerup: [movePath_Up],
-        pointerout: [movePath_Out],
-      },
-    },
-    dragArea: {
-      canvas: {
-        pointermove: [dragArea_Move_AreaUpdate, dragArea_Move_HitTest],
-        pointerup: [dragArea_Up],
-        pointerout: [dragArea_Out],
-      },
-    },
-    movePathOut: {
-      canvas: { pointerover: [movePathOut_canvas_Over] },
-      page: { pointermove: [movePathOut_page_Move], pointerup: [movePathOut_page_Up] },
-    },
-    dragAreaOut: {
-      canvas: { pointerover: [dragAreaOut_canvas_Over] },
-      page: {
-        pointermove: [dragAreaOut_Move_page_AreaUpdate, dragAreaOut_Move_page_HitTest],
-        pointerup: [dragAreaOut_page_Up],
-      },
-    },
-  };
-  const [eventState, setEventState] = useState<EventState>('searchPath');
-  useEffect(() => {
-    eventListenerManagement('addEventListener', eventList, eventState);
-    return () => {
-      eventListenerManagement('removeEventListener', eventList, eventState);
-    };
-  }, [textPaths, eventState]);
-
-  function searchPath_Move(event: globalThis.PointerEvent) {
+  const searchPath_canvas_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
 
@@ -132,8 +85,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
     else canvas.current.style.cursor = 'grab';
-  }
-  function searchPath_Down(event: globalThis.PointerEvent) {
+  };
+  const searchPath_canvas_pointerdown: EventListener<'pointerdown'> = (event) => {
     if (canvas.current === null) return;
 
     if (hitTextPath.current === undefined) {
@@ -167,9 +120,9 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     }
     canvas.current.style.cursor = 'grabbing';
     setEventState('movePath');
-  }
+  };
 
-  function movePath_Move(event: globalThis.PointerEvent) {
+  const movePath_canvas_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
 
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
@@ -201,18 +154,18 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
     setSelectedArea(getNewSelectedArea(newSelectedPaths));
-  }
-  function movePath_Out() {
+  };
+  const movePath_canvas_pointerout: EventListener<'pointerout'> = () => {
     canvas.current!.style.cursor = 'crosshair';
     document.getElementById('page')!.style.cursor = 'grabbing';
     setEventState('movePathOut');
-  }
-  function movePath_Up() {
+  };
+  const movePath_canvas_pointerup: EventListener<'pointerup'> = () => {
     canvas.current!.style.cursor = 'grab';
     setEventState('searchPath');
-  }
+  };
 
-  function movePathOut_canvas_Over(event: globalThis.PointerEvent) {
+  const movePathOut_canvas_pointerover: EventListener<'pointerover'> = (event) => {
     if (canvas.current === null) return;
     if (event.buttons === 1) {
       canvas.current.style.cursor = 'grabbing';
@@ -220,8 +173,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     } else {
       setEventState('searchPath');
     }
-  }
-  function movePathOut_page_Move(event: globalThis.PointerEvent) {
+  };
+  const movePathOut_page_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
 
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
@@ -253,14 +206,14 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
     setSelectedArea(getNewSelectedArea(newSelectedPaths));
-  }
-  function movePathOut_page_Up() {
+  };
+  const movePathOut_page_pointerup: EventListener<'pointerup'> = () => {
     canvas.current!.style.cursor = 'crosshair';
     document.getElementById('page')!.style.cursor = '';
     setEventState('searchPath');
-  }
+  };
 
-  function dragArea_Move_AreaUpdate(event: globalThis.PointerEvent) {
+  const dragArea_canvas_pointermove_AreaUpdate: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
@@ -274,22 +227,22 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
     setDraggeddArea(draggedArea);
-  }
-  function dragArea_Move_HitTest(event: globalThis.PointerEvent) {
+  };
+  const dragArea_canvas_pointermove_HitTest: EventListener<'pointermove'> = (event) => {
     const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
     const selectedArea = getNewSelectedArea(newTextPaths);
     setTextPaths(newTextPaths);
     setSelectedArea(selectedArea);
-  }
-  function dragArea_Out() {
+  };
+  const dragArea_canvas_pointerout: EventListener<'pointerout'> = () => {
     setEventState('dragAreaOut');
-  }
-  function dragArea_Up() {
+  };
+  const dragArea_canvas_pointerup: EventListener<'pointerup'> = () => {
     setDraggeddArea(initialTextPath);
     setEventState('searchPath');
-  }
+  };
 
-  function dragAreaOut_Move_page_AreaUpdate(event: globalThis.PointerEvent) {
+  const dragAreaOut_page_pointermove_AreaUpdate: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
@@ -303,18 +256,18 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
     setDraggeddArea(draggedArea);
-  }
-  function dragAreaOut_Move_page_HitTest(event: globalThis.PointerEvent) {
+  };
+  const dragAreaOut_page_pointermove_HitTest: EventListener<'pointermove'> = (event) => {
     const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
     const selectedArea = getNewSelectedArea(newTextPaths);
     setTextPaths(newTextPaths);
     setSelectedArea(selectedArea);
-  }
-  function dragAreaOut_page_Up() {
+  };
+  const dragAreaOut_page_pointerup: EventListener<'pointerup'> = () => {
     setDraggeddArea(initialTextPath);
     setEventState('searchPath');
-  }
-  function dragAreaOut_canvas_Over(event: globalThis.PointerEvent) {
+  };
+  const dragAreaOut_canvas_pointerover: EventListener<'pointerover'> = (event) => {
     if (canvas.current === null) return;
     if (event.buttons === 1) {
       setEventState('dragArea');
@@ -322,27 +275,48 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       setDraggeddArea(initialTextPath);
       setEventState('searchPath');
     }
-  }
+  };
 
+  // イベントリスナ管理
+  type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
+  type ElementId = 'canvas' | 'page';
+  const eventList: EventList<EventState, ElementId> = {
+    searchPath: {
+      canvas: {
+        pointermove: [searchPath_canvas_pointermove],
+        pointerdown: [searchPath_canvas_pointerdown],
+      },
+    },
+    movePath: {
+      canvas: {
+        pointermove: [movePath_canvas_pointermove],
+        pointerup: [movePath_canvas_pointerup],
+        pointerout: [movePath_canvas_pointerout],
+      },
+    },
+    dragArea: {
+      canvas: {
+        pointermove: [dragArea_canvas_pointermove_AreaUpdate, dragArea_canvas_pointermove_HitTest],
+        pointerup: [dragArea_canvas_pointerup],
+        pointerout: [dragArea_canvas_pointerout],
+      },
+    },
+    movePathOut: {
+      canvas: { pointerover: [movePathOut_canvas_pointerover] },
+      page: {
+        pointermove: [movePathOut_page_pointermove],
+        pointerup: [movePathOut_page_pointerup],
+      },
+    },
+    dragAreaOut: {
+      canvas: { pointerover: [dragAreaOut_canvas_pointerover] },
+      page: {
+        pointermove: [dragAreaOut_page_pointermove_AreaUpdate, dragAreaOut_page_pointermove_HitTest],
+        pointerup: [dragAreaOut_page_pointerup],
+      },
+    },
+  };
+  const [eventState, setEventState] = useState<EventState>('searchPath');
+  useEventListener(eventList, eventState, [textPaths, eventState]);
   return { setSelectedArea };
 };
-
-type EventListEntries = [ElementId, EventSetting][];
-type EventSettingEntries = [EventType, EventListener[]][];
-function eventListenerManagement(
-  eventManagementType: 'addEventListener' | 'removeEventListener',
-  eventList: EventsList,
-  eventState: EventState
-) {
-  const eventListEntries = Object.entries(eventList[eventState]) as EventListEntries;
-  eventListEntries.forEach(([elementId, eventSetting]) => {
-    const element = document.getElementById(elementId);
-    const eventSettingEntries = Object.entries(eventSetting) as EventSettingEntries;
-    eventSettingEntries.forEach(([eventType, eventListeners]) => {
-      eventListeners.forEach((eventListener) => {
-        if (eventManagementType === 'addEventListener') element?.addEventListener(eventType, eventListener);
-        if (eventManagementType === 'removeEventListener') element?.removeEventListener(eventType, eventListener);
-      });
-    });
-  });
-}
