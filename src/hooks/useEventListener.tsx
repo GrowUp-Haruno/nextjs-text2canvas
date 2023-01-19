@@ -1,16 +1,15 @@
 import { DependencyList, useEffect } from 'react';
 
-type EventType = keyof HTMLElementEventMap;
-export type EventListener<Key extends EventType> = (this: HTMLElement, event: HTMLElementEventMap[Key]) => any;
-type EventSetting = { [key in EventType]?: EventListener<key>[] };
-type EventListEntries<ElementId extends string> = [ElementId, EventSetting][];
-type EventSettingEntries = [EventType, EventListener<EventType>[]][];
-export type EventsList<EventState extends string, ElementId extends string> = {
-  [key in EventState]: { [id in ElementId]?: EventSetting };
+type EventKey = keyof HTMLElementEventMap;
+type Event<Key extends EventKey> = HTMLElementEventMap[Key];
+export type EventListener<Key extends EventKey> = (event: Event<Key>) => any;
+type EventMap = { [key in EventKey]?: EventListener<key>[] };
+export type EventList<EventState extends string, ElementId extends string> = {
+  [key in EventState]: { [id in ElementId]?: EventMap };
 };
 
 export const useEventListener = <EventState extends string, ElementId extends string>(
-  eventList: EventsList<EventState, ElementId>,
+  eventList: EventList<EventState, ElementId>,
   eventState: EventState,
   deps?: DependencyList | undefined
 ) => {
@@ -24,17 +23,18 @@ export const useEventListener = <EventState extends string, ElementId extends st
 
 function eventListenerManagement<EventState extends string, ElementId extends string>(
   eventManagementType: 'addEventListener' | 'removeEventListener',
-  eventList: EventsList<EventState, ElementId>,
+  eventList: EventList<EventState, ElementId>,
   eventState: EventState
 ) {
-  const eventListEntries = Object.entries(eventList[eventState]) as EventListEntries<ElementId>;
-  eventListEntries.forEach(([elementId, eventSetting]) => {
+  const eventListEntries = Object.entries(eventList[eventState]) as [ElementId, EventMap][];
+  eventListEntries.forEach(([elementId, eventMap]) => {
     const element = document.getElementById(elementId);
-    const eventSettingEntries = Object.entries(eventSetting) as EventSettingEntries;
-    eventSettingEntries.forEach(([eventType, eventListeners]) => {
+    const eventSettingEntries = Object.entries(eventMap) as [EventKey, EventListener<EventKey>[]][];
+
+    eventSettingEntries.forEach(([eventKey, eventListeners]) => {
       eventListeners.forEach((eventListener) => {
-        if (eventManagementType === 'addEventListener') element?.addEventListener(eventType, eventListener);
-        if (eventManagementType === 'removeEventListener') element?.removeEventListener(eventType, eventListener);
+        if (eventManagementType === 'addEventListener') element?.addEventListener(eventKey, eventListener);
+        if (eventManagementType === 'removeEventListener') element?.removeEventListener(eventKey, eventListener);
       });
     });
   });
