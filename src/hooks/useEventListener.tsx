@@ -1,10 +1,10 @@
 import { DependencyList, useEffect } from 'react';
 
-type EventType = 'pointermove' | 'pointerdown' | 'pointerup' | 'pointerout' | 'pointerover';
-type EventListener = (event: globalThis.PointerEvent) => any;
-type EventSetting = { [key in EventType]?: EventListener[] };
+type EventType = keyof HTMLElementEventMap;
+export type EventListener<Key extends EventType> = (this: HTMLElement, event: HTMLElementEventMap[Key]) => any;
+type EventSetting = { [key in EventType]?: EventListener<key>[] };
 type EventListEntries<ElementId extends string> = [ElementId, EventSetting][];
-type EventSettingEntries = [EventType, EventListener[]][];
+type EventSettingEntries = [EventType, EventListener<EventType>[]][];
 export type EventsList<EventState extends string, ElementId extends string> = {
   [key in EventState]: { [id in ElementId]?: EventSetting };
 };

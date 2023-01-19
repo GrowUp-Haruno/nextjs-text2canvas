@@ -7,7 +7,7 @@ import { getDraggeddArea } from '../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath, Coordinates } from '../types/TextPath';
-import { EventsList, useEventListener } from './useEventListener';
+import { EventsList, EventListener, useEventListener } from './useEventListener';
 import { useSystem } from './useSystem';
 
 type HooksArg = {
@@ -59,6 +59,224 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     });
   }, [textPaths, selectedArea, draggedArea]);
 
+  const searchPath_Move: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
+
+    origin.current.x = Math.floor(event.pageX - rect.x);
+    origin.current.y = Math.floor(event.pageY - rect.y);
+
+    hitTextPathIndex.current = -1;
+    hitTextPath.current = textPaths
+      .slice()
+      .reverse()
+      .find((textPath, i) => {
+        if (canvasCtx.current === null) return false;
+        if (textPath.path2D === undefined) return false;
+        if (textPath.selectedPath2D === undefined) return false;
+
+        const testPath = textPath.isSelected === true ? textPath.selectedPath2D : textPath.path2D;
+        const isPointInPath = canvasCtx.current.isPointInPath(testPath, origin.current.x, origin.current.y);
+        if (!isPointInPath) return false;
+
+        hitTextPathIndex.current = textPaths.length - i - 1;
+        return true;
+      });
+
+    if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
+    else canvas.current.style.cursor = 'grab';
+  };
+  const searchPath_Down: EventListener<'pointerdown'> = (event) => {
+    if (canvas.current === null) return;
+
+    if (hitTextPath.current === undefined) {
+      setTextPaths(isSelectedReset);
+      setSelectedArea(initialTextPath);
+      setEventState('dragArea');
+      return;
+    }
+
+    if (hitTextPath.current.isSelected === true) {
+      canvas.current.style.cursor = 'grabbing';
+      setEventState('movePath');
+      return;
+    }
+
+    hitTextPath.current.isSelected = true;
+    const unHitTextPaths = textPaths.filter((_, i) => i !== hitTextPathIndex.current);
+
+    // ctrlキーによる複数選択
+    const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
+    const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
+    if (pressedMacCommandKey || pressedWinControlKey) {
+      const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
+      const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
+      setTextPaths([...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current]);
+      setSelectedArea(getNewSelectedArea([...selectedTextPaths, hitTextPath.current]));
+    } else {
+      const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
+      const nowTextPaths = [...newUnHitTextPaths, hitTextPath.current];
+      setTextPaths(nowTextPaths);
+    }
+    canvas.current.style.cursor = 'grabbing';
+    setEventState('movePath');
+  };
+
+  const movePath_Move: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+
+    const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
+    const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
+    const rect = canvas.current.getBoundingClientRect();
+    const clickPositionX = Math.floor(event.pageX - rect.x);
+    const clickPositionY = Math.floor(event.pageY - rect.y);
+    const isMovableX = !event.shiftKey || event.altKey;
+    const isMovableY = !event.shiftKey || !event.altKey;
+
+    const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
+      if (isMovableX) {
+        selectedTextPath.offset.x += clickPositionX - origin.current.x;
+        selectedTextPath.endPoint.x += clickPositionX - origin.current.x;
+      }
+      if (isMovableY) {
+        selectedTextPath.offset.y += clickPositionY - origin.current.y;
+        selectedTextPath.endPoint.y += clickPositionY - origin.current.y;
+      }
+
+      selectedTextPath.path2D = getPath2D(selectedTextPath);
+      selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
+
+      return selectedTextPath;
+    });
+
+    if (isMovableX) origin.current.x = clickPositionX;
+    if (isMovableY) origin.current.y = clickPositionY;
+
+    setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
+    setSelectedArea(getNewSelectedArea(newSelectedPaths));
+  };
+  const movePath_Out: EventListener<'pointerout'> = () => {
+    canvas.current!.style.cursor = 'crosshair';
+    document.getElementById('page')!.style.cursor = 'grabbing';
+    setEventState('movePathOut');
+  };
+  const movePath_Up: EventListener<'pointerup'> = () => {
+    canvas.current!.style.cursor = 'grab';
+    setEventState('searchPath');
+  };
+
+  const movePathOut_canvas_Over: EventListener<'pointerover'> = (event) => {
+    if (canvas.current === null) return;
+    if (event.buttons === 1) {
+      canvas.current.style.cursor = 'grabbing';
+      setEventState('movePath');
+    } else {
+      setEventState('searchPath');
+    }
+  };
+  const movePathOut_page_Move: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+
+    const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
+    const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
+    const rect = canvas.current.getBoundingClientRect();
+    const clickPositionX = Math.floor(event.pageX - rect.x);
+    const clickPositionY = Math.floor(event.pageY - rect.y);
+    const isMovableX = !event.shiftKey || event.altKey;
+    const isMovableY = !event.shiftKey || !event.altKey;
+
+    const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
+      if (isMovableX) {
+        selectedTextPath.offset.x += clickPositionX - origin.current.x;
+        selectedTextPath.endPoint.x += clickPositionX - origin.current.x;
+      }
+      if (isMovableY) {
+        selectedTextPath.offset.y += clickPositionY - origin.current.y;
+        selectedTextPath.endPoint.y += clickPositionY - origin.current.y;
+      }
+
+      selectedTextPath.path2D = getPath2D(selectedTextPath);
+      selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
+
+      return selectedTextPath;
+    });
+
+    if (isMovableX) origin.current.x = clickPositionX;
+    if (isMovableY) origin.current.y = clickPositionY;
+
+    setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
+    setSelectedArea(getNewSelectedArea(newSelectedPaths));
+  };
+  const movePathOut_page_Up: EventListener<'pointerup'> = () => {
+    canvas.current!.style.cursor = 'crosshair';
+    document.getElementById('page')!.style.cursor = '';
+    setEventState('searchPath');
+  };
+
+  const dragArea_Move_AreaUpdate: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
+    const drag: Coordinates = {
+      x: Math.floor(event.pageX - rect.x),
+      y: Math.floor(event.pageY - rect.y),
+    };
+    const distanceOriginToDrag: Coordinates = {
+      x: drag.x - origin.current.x,
+      y: drag.y - origin.current.y,
+    };
+
+    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
+    setDraggeddArea(draggedArea);
+  };
+  const dragArea_Move_HitTest: EventListener<'pointermove'> = (event) => {
+    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
+    const selectedArea = getNewSelectedArea(newTextPaths);
+    setTextPaths(newTextPaths);
+    setSelectedArea(selectedArea);
+  };
+  const dragArea_Out: EventListener<'pointerout'> = () => {
+    setEventState('dragAreaOut');
+  };
+  const dragArea_Up: EventListener<'pointerup'> = () => {
+    setDraggeddArea(initialTextPath);
+    setEventState('searchPath');
+  };
+
+  const dragAreaOut_Move_page_AreaUpdate: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
+    const drag: Coordinates = {
+      x: Math.floor(event.pageX - rect.x),
+      y: Math.floor(event.pageY - rect.y),
+    };
+    const distanceOriginToDrag: Coordinates = {
+      x: drag.x - origin.current.x,
+      y: drag.y - origin.current.y,
+    };
+
+    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
+    setDraggeddArea(draggedArea);
+  };
+  const dragAreaOut_Move_page_HitTest: EventListener<'pointermove'> = (event) => {
+    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
+    const selectedArea = getNewSelectedArea(newTextPaths);
+    setTextPaths(newTextPaths);
+    setSelectedArea(selectedArea);
+  };
+  const dragAreaOut_page_Up: EventListener<'pointerup'> = () => {
+    setDraggeddArea(initialTextPath);
+    setEventState('searchPath');
+  };
+  const dragAreaOut_canvas_Over: EventListener<'pointerover'> = (event) => {
+    if (canvas.current === null) return;
+    if (event.buttons === 1) {
+      setEventState('dragArea');
+    } else {
+      setDraggeddArea(initialTextPath);
+      setEventState('searchPath');
+    }
+  };
+
   // Canvas上のイベントリスナ管理
   type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'movePathOut' | 'dragAreaOut';
   type ElementId = 'canvas' | 'page';
@@ -97,224 +315,5 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   };
   const [eventState, setEventState] = useState<EventState>('searchPath');
   useEventListener(eventList, eventState, [textPaths, eventState]);
-
-  function searchPath_Move(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-    const rect = canvas.current.getBoundingClientRect();
-
-    origin.current.x = Math.floor(event.pageX - rect.x);
-    origin.current.y = Math.floor(event.pageY - rect.y);
-
-    hitTextPathIndex.current = -1;
-    hitTextPath.current = textPaths
-      .slice()
-      .reverse()
-      .find((textPath, i) => {
-        if (canvasCtx.current === null) return false;
-        if (textPath.path2D === undefined) return false;
-        if (textPath.selectedPath2D === undefined) return false;
-
-        const testPath = textPath.isSelected === true ? textPath.selectedPath2D : textPath.path2D;
-        const isPointInPath = canvasCtx.current.isPointInPath(testPath, origin.current.x, origin.current.y);
-        if (!isPointInPath) return false;
-
-        hitTextPathIndex.current = textPaths.length - i - 1;
-        return true;
-      });
-
-    if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
-    else canvas.current.style.cursor = 'grab';
-  }
-  function searchPath_Down(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-
-    if (hitTextPath.current === undefined) {
-      setTextPaths(isSelectedReset);
-      setSelectedArea(initialTextPath);
-      setEventState('dragArea');
-      return;
-    }
-
-    if (hitTextPath.current.isSelected === true) {
-      canvas.current.style.cursor = 'grabbing';
-      setEventState('movePath');
-      return;
-    }
-
-    hitTextPath.current.isSelected = true;
-    const unHitTextPaths = textPaths.filter((_, i) => i !== hitTextPathIndex.current);
-
-    // ctrlキーによる複数選択
-    const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
-    const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
-    if (pressedMacCommandKey || pressedWinControlKey) {
-      const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
-      const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
-      setTextPaths([...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current]);
-      setSelectedArea(getNewSelectedArea([...selectedTextPaths, hitTextPath.current]));
-    } else {
-      const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
-      const nowTextPaths = [...newUnHitTextPaths, hitTextPath.current];
-      setTextPaths(nowTextPaths);
-    }
-    canvas.current.style.cursor = 'grabbing';
-    setEventState('movePath');
-  }
-
-  function movePath_Move(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-
-    const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
-    const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
-    const rect = canvas.current.getBoundingClientRect();
-    const clickPositionX = Math.floor(event.pageX - rect.x);
-    const clickPositionY = Math.floor(event.pageY - rect.y);
-    const isMovableX = !event.shiftKey || event.altKey;
-    const isMovableY = !event.shiftKey || !event.altKey;
-
-    const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
-      if (isMovableX) {
-        selectedTextPath.offset.x += clickPositionX - origin.current.x;
-        selectedTextPath.endPoint.x += clickPositionX - origin.current.x;
-      }
-      if (isMovableY) {
-        selectedTextPath.offset.y += clickPositionY - origin.current.y;
-        selectedTextPath.endPoint.y += clickPositionY - origin.current.y;
-      }
-
-      selectedTextPath.path2D = getPath2D(selectedTextPath);
-      selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
-
-      return selectedTextPath;
-    });
-
-    if (isMovableX) origin.current.x = clickPositionX;
-    if (isMovableY) origin.current.y = clickPositionY;
-
-    setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
-    setSelectedArea(getNewSelectedArea(newSelectedPaths));
-  }
-  function movePath_Out() {
-    canvas.current!.style.cursor = 'crosshair';
-    document.getElementById('page')!.style.cursor = 'grabbing';
-    setEventState('movePathOut');
-  }
-  function movePath_Up() {
-    canvas.current!.style.cursor = 'grab';
-    setEventState('searchPath');
-  }
-
-  function movePathOut_canvas_Over(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-    if (event.buttons === 1) {
-      canvas.current.style.cursor = 'grabbing';
-      setEventState('movePath');
-    } else {
-      setEventState('searchPath');
-    }
-  }
-  function movePathOut_page_Move(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-
-    const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
-    const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
-    const rect = canvas.current.getBoundingClientRect();
-    const clickPositionX = Math.floor(event.pageX - rect.x);
-    const clickPositionY = Math.floor(event.pageY - rect.y);
-    const isMovableX = !event.shiftKey || event.altKey;
-    const isMovableY = !event.shiftKey || !event.altKey;
-
-    const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
-      if (isMovableX) {
-        selectedTextPath.offset.x += clickPositionX - origin.current.x;
-        selectedTextPath.endPoint.x += clickPositionX - origin.current.x;
-      }
-      if (isMovableY) {
-        selectedTextPath.offset.y += clickPositionY - origin.current.y;
-        selectedTextPath.endPoint.y += clickPositionY - origin.current.y;
-      }
-
-      selectedTextPath.path2D = getPath2D(selectedTextPath);
-      selectedTextPath.selectedPath2D = getSelectedPath2D({ textPath: selectedTextPath });
-
-      return selectedTextPath;
-    });
-
-    if (isMovableX) origin.current.x = clickPositionX;
-    if (isMovableY) origin.current.y = clickPositionY;
-
-    setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
-    setSelectedArea(getNewSelectedArea(newSelectedPaths));
-  }
-  function movePathOut_page_Up() {
-    canvas.current!.style.cursor = 'crosshair';
-    document.getElementById('page')!.style.cursor = '';
-    setEventState('searchPath');
-  }
-
-  function dragArea_Move_AreaUpdate(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-    const rect = canvas.current.getBoundingClientRect();
-    const drag: Coordinates = {
-      x: Math.floor(event.pageX - rect.x),
-      y: Math.floor(event.pageY - rect.y),
-    };
-    const distanceOriginToDrag: Coordinates = {
-      x: drag.x - origin.current.x,
-      y: drag.y - origin.current.y,
-    };
-
-    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
-    setDraggeddArea(draggedArea);
-  }
-  function dragArea_Move_HitTest(event: globalThis.PointerEvent) {
-    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
-    const selectedArea = getNewSelectedArea(newTextPaths);
-    setTextPaths(newTextPaths);
-    setSelectedArea(selectedArea);
-  }
-  function dragArea_Out() {
-    setEventState('dragAreaOut');
-  }
-  function dragArea_Up() {
-    setDraggeddArea(initialTextPath);
-    setEventState('searchPath');
-  }
-
-  function dragAreaOut_Move_page_AreaUpdate(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-    const rect = canvas.current.getBoundingClientRect();
-    const drag: Coordinates = {
-      x: Math.floor(event.pageX - rect.x),
-      y: Math.floor(event.pageY - rect.y),
-    };
-    const distanceOriginToDrag: Coordinates = {
-      x: drag.x - origin.current.x,
-      y: drag.y - origin.current.y,
-    };
-
-    const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
-    setDraggeddArea(draggedArea);
-  }
-  function dragAreaOut_Move_page_HitTest(event: globalThis.PointerEvent) {
-    const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
-    const selectedArea = getNewSelectedArea(newTextPaths);
-    setTextPaths(newTextPaths);
-    setSelectedArea(selectedArea);
-  }
-  function dragAreaOut_page_Up() {
-    setDraggeddArea(initialTextPath);
-    setEventState('searchPath');
-  }
-  function dragAreaOut_canvas_Over(event: globalThis.PointerEvent) {
-    if (canvas.current === null) return;
-    if (event.buttons === 1) {
-      setEventState('dragArea');
-    } else {
-      setDraggeddArea(initialTextPath);
-      setEventState('searchPath');
-    }
-  }
-
   return { setSelectedArea };
 };
