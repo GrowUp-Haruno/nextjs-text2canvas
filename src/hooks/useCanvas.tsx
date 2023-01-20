@@ -136,11 +136,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
       if (isMovableX) {
         selectedTextPath.offset.x += clickPositionX - origin.current.x;
-        selectedTextPath.endPoint.x += clickPositionX - origin.current.x;
+        selectedTextPath.selectedArea.x += clickPositionX - origin.current.x;
       }
       if (isMovableY) {
         selectedTextPath.offset.y += clickPositionY - origin.current.y;
-        selectedTextPath.endPoint.y += clickPositionY - origin.current.y;
+        selectedTextPath.selectedArea.y += clickPositionY - origin.current.y;
       }
 
       selectedTextPath.path2D = getPath2D(selectedTextPath);
@@ -188,11 +188,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
       if (isMovableX) {
         selectedTextPath.offset.x += clickPositionX - origin.current.x;
-        selectedTextPath.endPoint.x += clickPositionX - origin.current.x;
+        selectedTextPath.selectedArea.x += clickPositionX - origin.current.x;
       }
       if (isMovableY) {
         selectedTextPath.offset.y += clickPositionY - origin.current.y;
-        selectedTextPath.endPoint.y += clickPositionY - origin.current.y;
+        selectedTextPath.selectedArea.y += clickPositionY - origin.current.y;
       }
 
       selectedTextPath.path2D = getPath2D(selectedTextPath);
