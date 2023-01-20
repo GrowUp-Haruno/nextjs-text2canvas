@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import opentype from 'opentype.js';
 import * as fp from 'path';
-import { Coordinates, TextPath } from '../../types/TextPath';
+import { Coordinates, SelectedArea, TextPath } from '../../types/TextPath';
 
 type Data = {
   textPath: TextPath;
@@ -47,13 +47,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   offset.x = -startPoint.x;
   offset.y = -startPoint.y;
-  endPoint.x += offset.x;
-  endPoint.y += offset.x;
+
+  const selectedArea: SelectedArea = { x: 0, y: 0, w: 0, h: 0 };
+  selectedArea.w = endPoint.x - startPoint.x;
+  selectedArea.h = endPoint.y - startPoint.y;
 
   const textPath: TextPath = {
     ...path,
     offset,
-    endPoint,
+    selectedArea,
     text,
     isSelected: false,
     path2D: undefined,
