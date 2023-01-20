@@ -63,8 +63,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
 
-    origin.current.x = Math.floor(event.pageX - rect.x);
-    origin.current.y = Math.floor(event.pageY - rect.y);
+    origin.current.x = event.pageX - rect.x;
+    origin.current.y = event.pageY - rect.y;
 
     hitTextPathIndex.current = -1;
     hitTextPath.current = textPaths
@@ -128,8 +128,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
     const rect = canvas.current.getBoundingClientRect();
-    const clickPositionX = Math.floor(event.pageX - rect.x);
-    const clickPositionY = Math.floor(event.pageY - rect.y);
+    const clickPositionX = event.pageX - rect.x;
+    const clickPositionY = event.pageY - rect.y;
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 
@@ -180,8 +180,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
     const rect = canvas.current.getBoundingClientRect();
-    const clickPositionX = Math.floor(event.pageX - rect.x);
-    const clickPositionY = Math.floor(event.pageY - rect.y);
+    const clickPositionX = event.pageX - rect.x;
+    const clickPositionY = event.pageY - rect.y;
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 
@@ -217,8 +217,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
-      x: Math.floor(event.pageX - rect.x),
-      y: Math.floor(event.pageY - rect.y),
+      x: event.pageX - rect.x,
+      y: event.pageY - rect.y,
     };
     const distanceOriginToDrag: Coordinates = {
       x: drag.x - origin.current.x,
@@ -246,8 +246,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
-      x: Math.floor(event.pageX - rect.x),
-      y: Math.floor(event.pageY - rect.y),
+      x: event.pageX - rect.x,
+      y: event.pageY - rect.y,
     };
     const distanceOriginToDrag: Coordinates = {
       x: drag.x - origin.current.x,
