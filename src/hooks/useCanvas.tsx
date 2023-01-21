@@ -130,17 +130,30 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const rect = canvas.current.getBoundingClientRect();
     const clickPositionX = event.pageX - rect.x;
     const clickPositionY = event.pageY - rect.y;
+    const movingX = clickPositionX - origin.current.x;
+    const movingY = clickPositionY - origin.current.y;
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 
+    const selectedPath = getNewSelectedArea(selectedTextPaths);
+    const startX = selectedPath.selectedArea.x;
+    const startY = selectedPath.selectedArea.y;
+    const testStartX = startX + movingX < 0;
+    const textStartY = startY + movingY < 0;
+
+    const endX = startX + selectedPath.selectedArea.w;
+    const endY = startY + selectedPath.selectedArea.h;
+    const testEndX = endX + movingX > canvas.current.width;
+    const testEndY = endY + movingY > canvas.current.height;
+
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
-      if (isMovableX) {
-        selectedTextPath.offset.x += clickPositionX - origin.current.x;
-        selectedTextPath.selectedArea.x += clickPositionX - origin.current.x;
+      if (isMovableX && !testStartX && !testEndX) {
+        selectedTextPath.offset.x += movingX;
+        selectedTextPath.selectedArea.x += movingX;
       }
-      if (isMovableY) {
-        selectedTextPath.offset.y += clickPositionY - origin.current.y;
-        selectedTextPath.selectedArea.y += clickPositionY - origin.current.y;
+      if (isMovableY && !textStartY && !testEndY) {
+        selectedTextPath.offset.y += movingY;
+        selectedTextPath.selectedArea.y += movingY;
       }
 
       selectedTextPath.path2D = getPath2D(selectedTextPath);
@@ -182,17 +195,30 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const rect = canvas.current.getBoundingClientRect();
     const clickPositionX = event.pageX - rect.x;
     const clickPositionY = event.pageY - rect.y;
+    const movingX = clickPositionX - origin.current.x;
+    const movingY = clickPositionY - origin.current.y;
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
 
+    const selectedPath = getNewSelectedArea(selectedTextPaths);
+    const startX = selectedPath.selectedArea.x;
+    const startY = selectedPath.selectedArea.y;
+    const testStartX = startX + movingX < 0;
+    const textStartY = startY + movingY < 0;
+
+    const endX = startX + selectedPath.selectedArea.w;
+    const endY = startY + selectedPath.selectedArea.h;
+    const testEndX = endX + movingX > canvas.current.width;
+    const testEndY = endY + movingY > canvas.current.height;
+
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
-      if (isMovableX) {
-        selectedTextPath.offset.x += clickPositionX - origin.current.x;
-        selectedTextPath.selectedArea.x += clickPositionX - origin.current.x;
+      if (isMovableX && !testStartX && !testEndX) {
+        selectedTextPath.offset.x += movingX;
+        selectedTextPath.selectedArea.x += movingX;
       }
-      if (isMovableY) {
-        selectedTextPath.offset.y += clickPositionY - origin.current.y;
-        selectedTextPath.selectedArea.y += clickPositionY - origin.current.y;
+      if (isMovableY && !textStartY && !testEndY) {
+        selectedTextPath.offset.y += movingY;
+        selectedTextPath.selectedArea.y += movingY;
       }
 
       selectedTextPath.path2D = getPath2D(selectedTextPath);
