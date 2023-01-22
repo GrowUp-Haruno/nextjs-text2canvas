@@ -1,10 +1,10 @@
 export type TextPath = Path & {
   offset: Coordinates;
-  endPoint: Coordinates;
+  selectedArea: SelectedArea;
   text: string;
   isSelected: boolean;
-  path2D: Path2D|undefined;
-  selectedPath2D: Path2D|undefined;
+  path2D: Path2D | undefined;
+  selectedPath2D: Path2D | undefined;
 };
 
 export type Path = {
@@ -15,3 +15,4 @@ export type Path = {
 };
 
 export type Coordinates = { x: number; y: number };
+export type SelectedArea = { x: number; y: number; w: number; h: number };

@@ -18,10 +18,11 @@ export const getNewTextPaths = ({ textPaths, draggedArea }: { textPaths: TextPat
 
   const newTextPath = textPaths.map((textPath) => {
     const testPath2D = new Path2D(textPath.path2D);
-    const x = draggedArea.offset.x;
-    const y = draggedArea.endPoint.y;
-    const w = draggedArea.endPoint.x - draggedArea.offset.x + 2;
-    const h = draggedArea.offset.y - draggedArea.endPoint.y + 2;
+
+    const x = draggedArea.selectedArea.x;
+    const y = draggedArea.selectedArea.y;
+    const w = draggedArea.selectedArea.w + 2;
+    const h = draggedArea.selectedArea.h + 2;
     // w,hのうちどちらかが2未満の場合、ヒットの有無に関係なくisPointInPathが
     // falseになるため、各計算結果に２を加算する
     testPath2D.rect(x, y, w, h);
