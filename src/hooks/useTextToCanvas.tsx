@@ -38,6 +38,8 @@ export const useTextToCanvas = () => {
         textPath.offset.y += SHIFT_POSITION;
         textPath.selectedArea.x += SHIFT_POSITION;
         textPath.selectedArea.y += SHIFT_POSITION;
+        textPath.selectedArea.centerX += SHIFT_POSITION;
+        textPath.selectedArea.centerY += SHIFT_POSITION;
 
         textPath.path2D = getPath2D(textPath);
         textPath.selectedPath2D = getSelectedPath2D({ textPath });

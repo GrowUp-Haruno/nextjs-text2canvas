@@ -11,7 +11,12 @@ export const getDraggeddArea = ({
   origin: Coordinates;
   drag: Coordinates;
 }): TextPath => {
-  let selectedArea: SelectedArea = { x: 0, y: 0, w: 0, h: 0 };
+  let x = 0;
+  let y = 0;
+  const w = Math.abs(drag.x - origin.x);
+  const h = Math.abs(drag.y - origin.y);
+  const halfW = w / 2;
+  const halfH = h / 2;
 
   const hasDragged_RightUp = distanceOriginToDrag.x >= 0 && distanceOriginToDrag.y <= 0;
   const hasDragged_RightDown = distanceOriginToDrag.x > 0 && distanceOriginToDrag.y > 0;
@@ -19,11 +24,27 @@ export const getDraggeddArea = ({
   const hasDragged_LeftDown = distanceOriginToDrag.x <= 0 && distanceOriginToDrag.y >= 0;
 
   // ドラッグの方向
-  if (hasDragged_RightUp) selectedArea = { x: origin.x, y: drag.y, w: drag.x - origin.x, h: origin.y - drag.y };
-  if (hasDragged_RightDown) selectedArea = { x: origin.x, y: origin.y, w: drag.x - origin.x, h: drag.y - origin.y };
-  if (hasDragged_LeftUp) selectedArea = { x: drag.x, y: drag.y, w: origin.x - drag.x, h: origin.y - drag.y };
-  if (hasDragged_LeftDown) selectedArea = { x: drag.x, y: origin.y, w: origin.x - drag.x, h: drag.y - origin.y };
+  if (hasDragged_RightUp) {
+    x = origin.x;
+    y = drag.y;
+  }
+  if (hasDragged_RightDown) {
+    x = origin.x;
+    y = origin.y;
+  }
+  if (hasDragged_LeftUp) {
+    x = drag.x;
+    y = drag.y;
+  }
+  if (hasDragged_LeftDown) {
+    x = drag.x;
+    y = origin.y;
+  }
 
+  const centerX = x + halfW;
+  const centerY = y + halfH;
+
+  const selectedArea: SelectedArea = { x, y, w, h, centerX, centerY, halfW, halfH };
   const newTextPath: TextPath = {
     ...initialTextPath,
     isSelected: true,

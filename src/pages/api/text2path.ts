@@ -48,9 +48,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   offset.x = -startPoint.x;
   offset.y = -startPoint.y;
 
-  const selectedArea: SelectedArea = { x: 0, y: 0, w: 0, h: 0 };
-  selectedArea.w = endPoint.x - startPoint.x;
-  selectedArea.h = endPoint.y - startPoint.y;
+  const x = 0;
+  const y = 0;
+  const w = endPoint.x - startPoint.x;
+  const h = endPoint.y - startPoint.y;
+  const halfW = w / 2;
+  const halfH = h / 2;
+  const centerX = x + halfW;
+  const centerY = y + halfH;
+  const selectedArea: SelectedArea = { x, y, w, h, centerX, centerY, halfW, halfH };
 
   const textPath: TextPath = {
     ...path,

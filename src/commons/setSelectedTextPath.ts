@@ -25,12 +25,8 @@ export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
   const y = startPoint.y;
   const w = endPoint.x - startPoint.x;
   const h = endPoint.y - startPoint.y;
-  const hw = w / 2;
-  const hh = h / 2;
-  const cx = x + hw;
-  const cy = y + hh;
 
-  const selectedArea: SelectedArea = { x, y, w, h, cx, cy, hw, hh };
+  const selectedArea: SelectedArea = { x, y, w, h, centerX: 0, centerY: 0, halfW: 0, halfH: 0 };
   const isSelected = selectedTextPaths.length === 1 ? false : true;
   const newTextPath: TextPath = { ...Object.create(initialTextPath), isSelected, selectedArea };
   const selectedPath2D = getSelectedPath2D({ textPath: newTextPath });
