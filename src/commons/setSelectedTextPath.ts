@@ -21,11 +21,18 @@ export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
     if (endPoint.y < endY) endPoint.y = endY;
   });
 
+  const x = startPoint.x;
+  const y = startPoint.y;
   const w = endPoint.x - startPoint.x;
   const h = endPoint.y - startPoint.y;
-  const selectedArea: SelectedArea = { x: startPoint.x, y: startPoint.y, w, h };
+  const hw = w / 2;
+  const hh = h / 2;
+  const cx = x + hw;
+  const cy = y + hh;
+
+  const selectedArea: SelectedArea = { x, y, w, h, cx, cy, hw, hh };
   const isSelected = selectedTextPaths.length === 1 ? false : true;
-  const newTextPath: TextPath = { ...initialTextPath, isSelected, selectedArea };
+  const newTextPath: TextPath = { ...Object.create(initialTextPath), isSelected, selectedArea };
   const selectedPath2D = getSelectedPath2D({ textPath: newTextPath });
 
   return { ...newTextPath, selectedPath2D };

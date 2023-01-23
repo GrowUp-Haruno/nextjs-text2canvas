@@ -15,4 +15,13 @@ export type Path = {
 };
 
 export type Coordinates = { x: number; y: number };
-export type SelectedArea = { x: number; y: number; w: number; h: number };
+export type SelectedArea = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  cx: number;
+  cy: number;
+  hw: number;
+  hh: number;
+};

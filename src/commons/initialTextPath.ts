@@ -8,7 +8,7 @@ export const initialTextPath: TextPath = {
   strokeWidth: 0,
   isSelected: false,
   offset: { x: Infinity, y: -Infinity },
-  selectedArea: { x: 0, y: 0, w: 0, h: 0 },
+  selectedArea: { x: 0, y: 0, w: 0, h: 0, cx: 0, cy: 0, hw: 0, hh: 0 },
   path2D: undefined,
   selectedPath2D: undefined,
 };
