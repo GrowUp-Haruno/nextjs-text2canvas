@@ -263,7 +263,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const dragArea_canvas_pointerout: EventListener<'pointerout'> = () => {
     setEventState('dragAreaOut');
   };
-  const dragArea_canvas_pointerup: EventListener<'pointerup'> = () => {
+  const dragArea_canvas_pointerup: EventListener<'pointerup'> = (event) => {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
+    origin.current.x = event.pageX - rect.x;
+    origin.current.y = event.pageY - rect.y;
     setDraggeddArea(initialTextPath);
     setEventState('searchPath');
   };
@@ -289,7 +293,11 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setTextPaths(newTextPaths);
     setSelectedArea(selectedArea);
   };
-  const dragAreaOut_page_pointerup: EventListener<'pointerup'> = () => {
+  const dragAreaOut_page_pointerup: EventListener<'pointerup'> = (event) => {
+    if (canvas.current === null) return;
+    const rect = canvas.current.getBoundingClientRect();
+    origin.current.x = event.pageX - rect.x;
+    origin.current.y = event.pageY - rect.y;
     setDraggeddArea(initialTextPath);
     setEventState('searchPath');
   };
