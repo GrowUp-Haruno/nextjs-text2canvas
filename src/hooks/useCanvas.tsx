@@ -217,10 +217,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       if (isMovableX && !testStartX && !testEndX) {
         selectedTextPath.offset.x += movingX;
         selectedTextPath.selectedArea.x += movingX;
+        selectedTextPath.selectedArea.centerX += movingX;
       }
       if (isMovableY && !textStartY && !testEndY) {
         selectedTextPath.offset.y += movingY;
         selectedTextPath.selectedArea.y += movingY;
+        selectedTextPath.selectedArea.centerY += movingY;
       }
 
       selectedTextPath.path2D = getPath2D(selectedTextPath);
