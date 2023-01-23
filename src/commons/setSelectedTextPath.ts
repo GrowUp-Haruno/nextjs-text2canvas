@@ -28,7 +28,7 @@ export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
 
   const selectedArea: SelectedArea = { x, y, w, h, centerX: 0, centerY: 0, halfW: 0, halfH: 0 };
   const isSelected = selectedTextPaths.length === 1 ? false : true;
-  const newTextPath: TextPath = { ...Object.create(initialTextPath), isSelected, selectedArea };
+  const newTextPath: TextPath = { ...initialTextPath, isSelected, selectedArea };
   const selectedPath2D = getSelectedPath2D({ textPath: newTextPath });
 
   return { ...newTextPath, selectedPath2D };
