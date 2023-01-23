@@ -1,14 +1,11 @@
-import { SelectedArea, TextPath } from '../types/TextPath';
-import { getSelectedPath2D } from './getSelectedPath2D';
-import { initialTextPath } from './initialTextPath';
+# isPointInPathを用いたヒットテスト
 
+```ts:setSelectedTextPath.ts
 export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
   let startPoint = { x: Infinity, y: Infinity };
   let endPoint = { x: -Infinity, y: -Infinity };
 
   const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
-  // if (selectedTextPaths.length === 1) return initialTextPath;
-
   selectedTextPaths.forEach((textPath) => {
     if (textPath.isSelected === false) return;
 
@@ -21,15 +18,13 @@ export function getNewSelectedArea(textPaths: TextPath[]): TextPath {
     if (endPoint.y < endY) endPoint.y = endY;
   });
 
-  const x = startPoint.x;
-  const y = startPoint.y;
   const w = endPoint.x - startPoint.x;
   const h = endPoint.y - startPoint.y;
-
-  const selectedArea: SelectedArea = { x, y, w, h, centerX: 0, centerY: 0, halfW: 0, halfH: 0 };
+  const selectedArea: SelectedArea = { x: startPoint.x, y: startPoint.y, w, h };
   const isSelected = selectedTextPaths.length === 1 ? false : true;
   const newTextPath: TextPath = { ...initialTextPath, isSelected, selectedArea };
   const selectedPath2D = getSelectedPath2D({ textPath: newTextPath });
 
   return { ...newTextPath, selectedPath2D };
 }
+```

@@ -11,33 +11,14 @@ export const isSelectedDelete = (textPaths: TextPath[]) => {
 };
 
 export const getNewTextPaths = ({ textPaths, draggedArea }: { textPaths: TextPath[]; draggedArea: TextPath }) => {
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement | null;
-  if (canvas === null) return textPaths;
-  const canvasCtx = canvas.getContext('2d');
-  if (canvasCtx === null) return textPaths;
-
   const newTextPath = textPaths.map((textPath) => {
-    const testPath2D = new Path2D(textPath.path2D);
-
-    const x = draggedArea.selectedArea.x;
-    const y = draggedArea.selectedArea.y;
-    const w = draggedArea.selectedArea.w + 2;
-    const h = draggedArea.selectedArea.h + 2;
-    // w,hのうちどちらかが2未満の場合、ヒットの有無に関係なくisPointInPathが
-    // falseになるため、各計算結果に２を加算する
-    testPath2D.rect(x, y, w, h);
-
-    let isPointInPaht = true;
-    const endX = x + w;
-    const endY = y + h;
-    for (let ix = x; ix <= endX; ix++) {
-      for (let iy = y; iy <= endY; iy++) {
-        isPointInPaht = canvasCtx.isPointInPath(testPath2D, ix, iy);
-        if (isPointInPaht === false) break;
-      }
-      if (isPointInPaht === false) break;
-    }
-    textPath.isSelected = !isPointInPaht;
+    const distanceCenterX = Math.abs(draggedArea.selectedArea.centerX - textPath.selectedArea.centerX);
+    const distanceCenterY = Math.abs(draggedArea.selectedArea.centerY - textPath.selectedArea.centerY);
+    const sumHalfW = draggedArea.selectedArea.halfW + textPath.selectedArea.halfW;
+    const sumHalfH = draggedArea.selectedArea.halfH + textPath.selectedArea.halfH;
+    const isWithinRangeX = distanceCenterX < sumHalfW;
+    const isWithinRangeY = distanceCenterY < sumHalfH;
+    textPath.isSelected = isWithinRangeX && isWithinRangeY;
     return textPath;
   });
 
