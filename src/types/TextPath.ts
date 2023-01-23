@@ -20,8 +20,8 @@ export type SelectedArea = {
   y: number;
   w: number;
   h: number;
-  cx: number;
-  cy: number;
-  hw: number;
-  hh: number;
+  centerX: number;
+  centerY: number;
+  halfW: number;
+  halfH: number;
 };
