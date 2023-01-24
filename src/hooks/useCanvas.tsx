@@ -127,32 +127,43 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
+    const selectArea = selectedArea.selectedArea;
     const rect = canvas.current.getBoundingClientRect();
+
     const clickPositionX = event.pageX - rect.x;
     const clickPositionY = event.pageY - rect.y;
-    const movingX = clickPositionX - origin.current.x;
-    const movingY = clickPositionY - origin.current.y;
+    const diffX = clickPositionX - origin.current.x;
+    const diffY = clickPositionY - origin.current.y;
+
+    const endX = selectArea.x + selectArea.w;
+    const movingX_min = Math.floor(selectArea.x);
+    const movingX_max = Math.floor(rect.width - endX);
+
+    const endY = selectArea.y + selectArea.h;
+    const movingY_min = Math.floor(selectArea.y);
+    const movingY_max = Math.floor(rect.height - endY);
+
+    const testStartX = selectArea.x + diffX < 0;
+    const testEndX = endX + diffX > canvas.current.width;
+    const textStartY = selectArea.y + diffY < 0;
+    const testEndY = endY + diffY > canvas.current.height;
+
+    let movingX = diffX;
+    let movingY = diffY;
+    if (testStartX) movingX = -movingX_min;
+    if (testEndX) movingX = movingX_max;
+    if (textStartY) movingY = -movingY_min;
+    if (testEndY) movingY = movingY_max;
+
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
-
-    const selectedPath = getNewSelectedArea(selectedTextPaths);
-    const startX = selectedPath.selectedArea.x;
-    const startY = selectedPath.selectedArea.y;
-    const testStartX = startX + movingX < 0;
-    const textStartY = startY + movingY < 0;
-
-    const endX = startX + selectedPath.selectedArea.w;
-    const endY = startY + selectedPath.selectedArea.h;
-    const testEndX = endX + movingX > canvas.current.width;
-    const testEndY = endY + movingY > canvas.current.height;
-
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
-      if (isMovableX && !testStartX && !testEndX) {
+      if (isMovableX) {
         selectedTextPath.offset.x += movingX;
         selectedTextPath.selectedArea.x += movingX;
         selectedTextPath.selectedArea.centerX += movingX;
       }
-      if (isMovableY && !textStartY && !testEndY) {
+      if (isMovableY) {
         selectedTextPath.offset.y += movingY;
         selectedTextPath.selectedArea.y += movingY;
         selectedTextPath.selectedArea.centerY += movingY;
