@@ -16,7 +16,7 @@ type HooksArg = {
 };
 
 export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
-  const [selectedArea, setSelectedArea] = useState(initialTextPath);
+  const [selectedPath, setSelectedPath] = useState(initialTextPath);
   const [draggedArea, setDraggeddArea] = useState(initialTextPath);
   const { system } = useSystem();
   const canvas = useRef<HTMLCanvasElement | null>(null);
@@ -50,19 +50,18 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     pathDraw({
       ctx: canvasCtx.current,
-      textPath: selectedArea,
+      textPath: selectedPath,
     });
 
     pathDraw({
       ctx: canvasCtx.current,
       textPath: draggedArea,
     });
-  }, [textPaths, selectedArea, draggedArea]);
+  }, [textPaths, selectedPath, draggedArea]);
 
   const searchPath_canvas_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
-
     origin.current.x = event.pageX - rect.x;
     origin.current.y = event.pageY - rect.y;
 
@@ -91,7 +90,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     if (hitTextPath.current === undefined) {
       setTextPaths(isSelectedReset);
-      setSelectedArea(initialTextPath);
+      setSelectedPath(initialTextPath);
       setEventState('dragArea');
       return;
     }
@@ -112,11 +111,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
       const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
       setTextPaths([...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current]);
-      setSelectedArea(getNewSelectedArea([...selectedTextPaths, hitTextPath.current]));
+      setSelectedPath(getNewSelectedArea([...selectedTextPaths, hitTextPath.current]));
     } else {
       const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
       const nowTextPaths = [...newUnHitTextPaths, hitTextPath.current];
       setTextPaths(nowTextPaths);
+      setSelectedPath(getNewSelectedArea(nowTextPaths));
     }
     canvas.current.style.cursor = 'grabbing';
     setEventState('movePath');
@@ -127,7 +127,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
-    const selectArea = selectedArea.selectedArea;
+    const selectArea = selectedPath.selectedArea;
     const rect = canvas.current.getBoundingClientRect();
 
     const clickPositionX = event.pageX - rect.x;
@@ -179,7 +179,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (isMovableY) origin.current.y = clickPositionY;
 
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
-    setSelectedArea(getNewSelectedArea(newSelectedPaths));
+    setSelectedPath(getNewSelectedArea(newSelectedPaths));
   };
   const movePath_page_pointerup: EventListener<'pointerup'> = () => {
     canvas.current!.style.cursor = 'grab';
@@ -203,9 +203,9 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   };
   const dragArea_page_pointermove_HitTest: EventListener<'pointermove'> = (event) => {
     const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
-    const selectedArea = getNewSelectedArea(newTextPaths);
+    const selectedPath = getNewSelectedArea(newTextPaths);
     setTextPaths(newTextPaths);
-    setSelectedArea(selectedArea);
+    setSelectedPath(selectedPath);
   };
   const dragArea_page_pointerup: EventListener<'pointerup'> = (event) => {
     if (canvas.current === null) return;
@@ -241,5 +241,5 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   };
   const [eventState, setEventState] = useState<EventState>('searchPath');
   useEventListener(eventList, eventState, [textPaths, eventState]);
-  return { setSelectedArea };
+  return { setSelectedPath };
 };
