@@ -31,6 +31,16 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     top: 0,
     bottom: 0,
   });
+  const lastTiem = useRef<{
+    hasOver: {
+      x: boolean;
+      y: boolean;
+    };
+    hasUnder: {
+      x: boolean;
+      y: boolean;
+    };
+  }>({ hasOver: { x: false, y: false }, hasUnder: { x: false, y: false } });
 
   function setClickSelectedArea(selectedArea: SelectedArea) {
     selectedPathClickPosition.current = {
@@ -176,6 +186,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
     const rect = canvas.current.getBoundingClientRect();
 
+    const offsetCanvas = {
+      right: rect.width - selectedPathClickPosition.current.right,
+      left: selectedPathClickPosition.current.left,
+      top: selectedPathClickPosition.current.top,
+      bottom: rect.height - selectedPathClickPosition.current.bottom,
+    };
     const clickPositionX = event.pageX - rect.x;
     const clickPositionY = event.pageY - rect.y;
     const hasOver: { x: boolean; y: boolean } = {
@@ -187,23 +203,19 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       y: clickPositionY < selectedPathClickPosition.current.top,
     };
 
-    const diffX = clickPositionX - origin.current.x;
-    const diffY = clickPositionY - origin.current.y;
-
     const endX = selectedPath.selectedArea.x + selectedPath.selectedArea.w;
-    const movingX_left = Math.floor(selectedPath.selectedArea.x);
-    const movingX_right = Math.floor(rect.width - endX);
-
     const endY = selectedPath.selectedArea.y + selectedPath.selectedArea.h;
-    const movingY_top = Math.floor(selectedPath.selectedArea.y);
-    const movingY_bottom = Math.floor(rect.height - endY);
-
-    let movingX = diffX;
-    let movingY = diffY;
-    if (hasUnder.x) movingX = -movingX_left;
-    if (hasOver.x) movingX = movingX_right;
-    if (hasUnder.y) movingY = -movingY_top;
-    if (hasOver.y) movingY = movingY_bottom;
+ 
+    let movingX = clickPositionX - origin.current.x;
+    let movingY = clickPositionY - origin.current.y;
+    if (hasUnder.x) movingX = -Math.floor(selectedPath.selectedArea.x);
+    if (hasOver.x) movingX = Math.floor(rect.width - endX);
+    if (hasUnder.y) movingY = -Math.floor(selectedPath.selectedArea.y);
+    if (hasOver.y) movingY = Math.floor(rect.height - endY);
+    if (lastTiem.current.hasOver.x === true && hasOver.x === false) movingX = clickPositionX - offsetCanvas.right;
+    if (lastTiem.current.hasOver.y === true && hasOver.y === false) movingY = clickPositionY - offsetCanvas.bottom;
+    if (lastTiem.current.hasUnder.x === true && hasUnder.x === false) movingX = clickPositionX - offsetCanvas.left;
+    if (lastTiem.current.hasUnder.y === true && hasUnder.y === false) movingY = clickPositionY - offsetCanvas.top;
 
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
@@ -229,6 +241,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (isMovableX) origin.current.x = clickPositionX;
     if (isMovableY) origin.current.y = clickPositionY;
 
+    lastTiem.current = { hasOver, hasUnder };
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
     setSelectedPath(getNewSelectedArea(newSelectedPaths));
   };
