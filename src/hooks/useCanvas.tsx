@@ -198,17 +198,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const movingY_top = Math.floor(selectedPath.selectedArea.y);
     const movingY_bottom = Math.floor(rect.height - endY);
 
-    const testStartX = selectedPath.selectedArea.x + diffX < 0;
-    const testEndX = endX + diffX > canvas.current.width;
-    const textStartY = selectedPath.selectedArea.y + diffY < 0;
-    const testEndY = endY + diffY > canvas.current.height;
-
     let movingX = diffX;
     let movingY = diffY;
-    if (testStartX || hasUnder.x) movingX = -movingX_left;
-    if (testEndX || hasOver.x) movingX = movingX_right;
-    if (textStartY || hasUnder.y) movingY = -movingY_top;
-    if (testEndY || hasOver.y) movingY = movingY_bottom;
+    if (hasUnder.x) movingX = -movingX_left;
+    if (hasOver.x) movingX = movingX_right;
+    if (hasUnder.y) movingY = -movingY_top;
+    if (hasOver.y) movingY = movingY_bottom;
 
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
