@@ -178,16 +178,25 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const clickPositionX = event.pageX - rect.x;
     const clickPositionY = event.pageY - rect.y;
+    const hasOver: { x: boolean; y: boolean } = {
+      x: clickPositionX > rect.width - selectedPathClickPosition.current.right,
+      y: clickPositionY > rect.height - selectedPathClickPosition.current.bottom,
+    };
+    const hasUnder: { x: boolean; y: boolean } = {
+      x: clickPositionX < selectedPathClickPosition.current.left,
+      y: clickPositionY < selectedPathClickPosition.current.top,
+    };
+
     const diffX = clickPositionX - origin.current.x;
     const diffY = clickPositionY - origin.current.y;
 
     const endX = selectedPath.selectedArea.x + selectedPath.selectedArea.w;
-    const movingX_min = Math.floor(selectedPath.selectedArea.x);
-    const movingX_max = Math.floor(rect.width - endX);
+    const movingX_left = Math.floor(selectedPath.selectedArea.x);
+    const movingX_right = Math.floor(rect.width - endX);
 
     const endY = selectedPath.selectedArea.y + selectedPath.selectedArea.h;
-    const movingY_min = Math.floor(selectedPath.selectedArea.y);
-    const movingY_max = Math.floor(rect.height - endY);
+    const movingY_top = Math.floor(selectedPath.selectedArea.y);
+    const movingY_bottom = Math.floor(rect.height - endY);
 
     const testStartX = selectedPath.selectedArea.x + diffX < 0;
     const testEndX = endX + diffX > canvas.current.width;
@@ -196,13 +205,14 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     let movingX = diffX;
     let movingY = diffY;
-    if (testStartX) movingX = -movingX_min;
-    if (testEndX) movingX = movingX_max;
-    if (textStartY) movingY = -movingY_min;
-    if (testEndY) movingY = movingY_max;
+    if (testStartX || hasUnder.x) movingX = -movingX_left;
+    if (testEndX || hasOver.x) movingX = movingX_right;
+    if (textStartY || hasUnder.y) movingY = -movingY_top;
+    if (testEndY || hasOver.y) movingY = movingY_bottom;
 
     const isMovableX = !event.shiftKey || event.altKey;
     const isMovableY = !event.shiftKey || !event.altKey;
+
     const newSelectedPaths = selectedTextPaths.map((selectedTextPath) => {
       if (isMovableX) {
         selectedTextPath.offset.x += movingX;
