@@ -205,7 +205,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const endX = selectedPath.selectedArea.x + selectedPath.selectedArea.w;
     const endY = selectedPath.selectedArea.y + selectedPath.selectedArea.h;
- 
+
     let movingX = clickPositionX - origin.current.x;
     let movingY = clickPositionY - origin.current.y;
     if (hasUnder.x) movingX = -Math.floor(selectedPath.selectedArea.x);
@@ -248,6 +248,9 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const movePath_page_pointerup: EventListener<'pointerup'> = () => {
     canvas.current!.style.cursor = 'grab';
     setEventState('searchPath');
+  };
+  const movePath_page_pointerout: EventListener<'pointerout'> = (event) => {
+    if (event.target === event.currentTarget) setEventState('searchPath');
   };
 
   const dragArea_page_pointermove_AreaUpdate: EventListener<'pointermove'> = (event) => {
@@ -294,6 +297,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       page: {
         pointermove: [movePath_page_pointermove],
         pointerup: [movePath_page_pointerup],
+        pointerout: [movePath_page_pointerout],
       },
     },
     dragArea: {
