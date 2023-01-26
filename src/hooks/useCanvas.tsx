@@ -250,7 +250,17 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setEventState('searchPath');
   };
   const movePath_page_pointerout: EventListener<'pointerout'> = (event) => {
-    if (event.target === event.currentTarget) setEventState('searchPath');
+    const page = document.getElementById('page') as HTMLDivElement | null;
+    if (page === null) return;
+
+    if (
+      event.clientX > page.clientWidth ||
+      event.clientX < page.clientLeft ||
+      event.clientY > page.clientHeight ||
+      event.clientY < page.clientTop
+    ) {
+      setEventState('searchPath');
+    }
   };
 
   const dragArea_page_pointermove_AreaUpdate: EventListener<'pointermove'> = (event) => {
