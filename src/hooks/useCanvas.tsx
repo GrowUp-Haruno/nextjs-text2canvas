@@ -6,7 +6,7 @@ import { pathDraw } from '../commons/pathDraw';
 import { getDraggeddArea } from '../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
 import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
-import { TextPath, Coordinates } from '../types/TextPath';
+import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../types/TextPath';
 import { EventList, EventListener, useEventListener } from './useEventListener';
 import { useSystem } from './useSystem';
 
@@ -25,6 +25,29 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const hitTextPath = useRef<TextPath | undefined>(undefined);
   const hitTextPathIndex = useRef<number>(-1);
   const hasHoversSelectedPath = useRef<boolean>(false);
+  const selectedPathClickPosition = useRef<PathClickPosition>({
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  });
+
+  function setClickSelectedArea(selectedArea: SelectedArea) {
+    selectedPathClickPosition.current = {
+      left: origin.current.x - selectedArea.x,
+      right: selectedArea.x + selectedArea.w - origin.current.x,
+      top: origin.current.y - selectedArea.y,
+      bottom: selectedArea.y + selectedArea.h - origin.current.y,
+    };
+  }
+  function resetClickSelectedArea() {
+    selectedPathClickPosition.current = {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    };
+  }
 
   // canvas初期設定
   useEffect(() => {
@@ -100,19 +123,22 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     if (canvas.current === null) return;
 
     if (hitTextPath.current === undefined) {
-      if (hasHoversSelectedPath.current === false) {
+      if (hasHoversSelectedPath.current === true) {
+        canvas.current.style.cursor = 'grabbing';
+        setClickSelectedArea(selectedPath.selectedArea);
+        setEventState('movePath');
+      } else {
+        resetClickSelectedArea();
         setTextPaths(isSelectedReset);
         setSelectedPath(initialTextPath);
         setEventState('dragArea');
-      } else {
-        canvas.current.style.cursor = 'grabbing';
-        setEventState('movePath');
       }
       return;
     }
 
     if (hitTextPath.current.isSelected === true) {
       canvas.current.style.cursor = 'grabbing';
+      setClickSelectedArea(selectedPath.selectedArea);
       setEventState('movePath');
       return;
     }
@@ -121,23 +147,24 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const unHitTextPaths = textPaths.filter((_, i) => i !== hitTextPathIndex.current);
     const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
     const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
-    const { newTextPath, newSelectedPath } = (() => {
+    const { newTextPaths, newSelectedPath } = (() => {
       if (pressedMacCommandKey || pressedWinControlKey) {
         const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
         const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
-        const newTextPath = [...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current];
+        const newTextPaths = [...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current];
         const newSelectedPath = getNewSelectedArea([...selectedTextPaths, hitTextPath.current]);
-        return { newTextPath, newSelectedPath };
+        return { newTextPaths, newSelectedPath };
       } else {
         const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
-        const newTextPath = [...newUnHitTextPaths, hitTextPath.current];
-        const newSelectedPath = getNewSelectedArea(newTextPath);
-        return { newTextPath, newSelectedPath };
+        const newTextPaths = [...newUnHitTextPaths, hitTextPath.current];
+        const newSelectedPath = getNewSelectedArea(newTextPaths);
+        return { newTextPaths, newSelectedPath };
       }
     })();
 
     canvas.current.style.cursor = 'grabbing';
-    setTextPaths(newTextPath);
+    setClickSelectedArea(newSelectedPath.selectedArea);
+    setTextPaths(newTextPaths);
     setSelectedPath(newSelectedPath);
     setEventState('movePath');
   };
