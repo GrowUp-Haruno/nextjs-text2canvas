@@ -174,7 +174,6 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
     const unSelectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === false);
-    const selectArea = selectedPath.selectedArea;
     const rect = canvas.current.getBoundingClientRect();
 
     const clickPositionX = event.pageX - rect.x;
@@ -182,17 +181,17 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const diffX = clickPositionX - origin.current.x;
     const diffY = clickPositionY - origin.current.y;
 
-    const endX = selectArea.x + selectArea.w;
-    const movingX_min = Math.floor(selectArea.x);
+    const endX = selectedPath.selectedArea.x + selectedPath.selectedArea.w;
+    const movingX_min = Math.floor(selectedPath.selectedArea.x);
     const movingX_max = Math.floor(rect.width - endX);
 
-    const endY = selectArea.y + selectArea.h;
-    const movingY_min = Math.floor(selectArea.y);
+    const endY = selectedPath.selectedArea.y + selectedPath.selectedArea.h;
+    const movingY_min = Math.floor(selectedPath.selectedArea.y);
     const movingY_max = Math.floor(rect.height - endY);
 
-    const testStartX = selectArea.x + diffX < 0;
+    const testStartX = selectedPath.selectedArea.x + diffX < 0;
     const testEndX = endX + diffX > canvas.current.width;
-    const textStartY = selectArea.y + diffY < 0;
+    const textStartY = selectedPath.selectedArea.y + diffY < 0;
     const testEndY = endY + diffY > canvas.current.height;
 
     let movingX = diffX;
