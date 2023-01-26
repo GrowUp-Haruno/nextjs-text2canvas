@@ -24,6 +24,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   const origin = useRef<Coordinates>({ x: 0, y: 0 });
   const hitTextPath = useRef<TextPath | undefined>(undefined);
   const hitTextPathIndex = useRef<number>(-1);
+  const hasHoversSelectedPath = useRef<boolean>(false);
 
   // canvas初期設定
   useEffect(() => {
@@ -82,16 +83,31 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         return true;
       });
 
-    if (hitTextPath.current === undefined) canvas.current.style.cursor = 'crosshair';
+    hasHoversSelectedPath.current = (() => {
+      if (canvasCtx.current === null) return false;
+      if (selectedPath.selectedPath2D === undefined) return false;
+
+      const testPath = selectedPath.selectedPath2D;
+      const isPointInPath = canvasCtx.current.isPointInPath(testPath, origin.current.x, origin.current.y);
+      return isPointInPath;
+    })();
+
+    if (hitTextPath.current === undefined && hasHoversSelectedPath.current === false)
+      canvas.current.style.cursor = 'crosshair';
     else canvas.current.style.cursor = 'grab';
   };
   const searchPath_canvas_pointerdown: EventListener<'pointerdown'> = (event) => {
     if (canvas.current === null) return;
 
     if (hitTextPath.current === undefined) {
-      setTextPaths(isSelectedReset);
-      setSelectedPath(initialTextPath);
-      setEventState('dragArea');
+      if (hasHoversSelectedPath.current === false) {
+        setTextPaths(isSelectedReset);
+        setSelectedPath(initialTextPath);
+        setEventState('dragArea');
+      } else {
+        canvas.current.style.cursor = 'grabbing';
+        setEventState('movePath');
+      }
       return;
     }
 
@@ -103,22 +119,26 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
     hitTextPath.current.isSelected = true;
     const unHitTextPaths = textPaths.filter((_, i) => i !== hitTextPathIndex.current);
-
-    // ctrlキーによる複数選択
     const pressedMacCommandKey: boolean = event.metaKey && system.current.os === 'mac';
     const pressedWinControlKey: boolean = event.ctrlKey && system.current.os === 'windows';
-    if (pressedMacCommandKey || pressedWinControlKey) {
-      const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
-      const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
-      setTextPaths([...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current]);
-      setSelectedPath(getNewSelectedArea([...selectedTextPaths, hitTextPath.current]));
-    } else {
-      const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
-      const nowTextPaths = [...newUnHitTextPaths, hitTextPath.current];
-      setTextPaths(nowTextPaths);
-      setSelectedPath(getNewSelectedArea(nowTextPaths));
-    }
+    const { newTextPath, newSelectedPath } = (() => {
+      if (pressedMacCommandKey || pressedWinControlKey) {
+        const selectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === true);
+        const unSelectedTextPaths = unHitTextPaths.filter((unHitTextPath) => unHitTextPath.isSelected === false);
+        const newTextPath = [...unSelectedTextPaths, ...selectedTextPaths, hitTextPath.current];
+        const newSelectedPath = getNewSelectedArea([...selectedTextPaths, hitTextPath.current]);
+        return { newTextPath, newSelectedPath };
+      } else {
+        const newUnHitTextPaths = unHitTextPaths.map((unHitTextPath) => ({ ...unHitTextPath, isSelected: false }));
+        const newTextPath = [...newUnHitTextPaths, hitTextPath.current];
+        const newSelectedPath = getNewSelectedArea(newTextPath);
+        return { newTextPath, newSelectedPath };
+      }
+    })();
+
     canvas.current.style.cursor = 'grabbing';
+    setTextPaths(newTextPath);
+    setSelectedPath(newSelectedPath);
     setEventState('movePath');
   };
 
