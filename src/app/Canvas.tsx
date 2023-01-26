@@ -8,12 +8,12 @@ export const Canvas: FC<{
   textPaths: TextPath[];
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, setTextPaths }) => {
-  const { setSelectedArea } = useCanvas({
+  const { setSelectedPath } = useCanvas({
     textPaths,
     setTextPaths,
   });
 
-  useKeyboard({ textPaths, setTextPaths, setSelectedArea });
+  useKeyboard({ textPaths, setTextPaths, setSelectedPath });
 
   return (
     <div>

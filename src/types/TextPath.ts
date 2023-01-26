@@ -25,3 +25,10 @@ export type SelectedArea = {
   halfW: number;
   halfH: number;
 };
+
+export type PathClickPosition = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};

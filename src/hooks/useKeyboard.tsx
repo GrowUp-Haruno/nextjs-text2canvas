@@ -6,12 +6,12 @@ import { TextPath } from '../types/TextPath';
 type HooksArg = {
   textPaths: TextPath[];
   setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
-  setSelectedArea: Dispatch<SetStateAction<TextPath>>;
+  setSelectedPath: Dispatch<SetStateAction<TextPath>>;
 };
 type HooksReturn = void;
 type CustomHooks = (hooksArg: HooksArg) => HooksReturn;
 
-export const useKeyboard: CustomHooks = ({ textPaths, setTextPaths, setSelectedArea }) => {
+export const useKeyboard: CustomHooks = ({ textPaths, setTextPaths, setSelectedPath }) => {
   useEffect(() => {
     document.addEventListener('keyup', handleKeyup);
     return () => {
@@ -22,11 +22,11 @@ export const useKeyboard: CustomHooks = ({ textPaths, setTextPaths, setSelectedA
   const handleKeyup = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       setTextPaths(isSelectedReset);
-      setSelectedArea(initialTextPath);
+      setSelectedPath(initialTextPath);
     }
     if (event.key === 'Delete') {
       setTextPaths(isSelectedDelete);
-      setSelectedArea(initialTextPath);
+      setSelectedPath(initialTextPath);
     }
   };
 
