@@ -179,7 +179,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setEventState('movePath');
   };
 
-  const movePath_page_pointermove: EventListener<'pointermove'> = (event) => {
+  const movePath_document_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
 
     const selectedTextPaths = textPaths.filter((textPath) => textPath.isSelected === true);
@@ -245,25 +245,12 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setTextPaths([...unSelectedTextPaths, ...newSelectedPaths]);
     setSelectedPath(getNewSelectedArea(newSelectedPaths));
   };
-  const movePath_page_pointerup: EventListener<'pointerup'> = () => {
+  const movePath_document_pointerup: EventListener<'pointerup'> = () => {
     canvas.current!.style.cursor = 'grab';
     setEventState('searchPath');
   };
-  const movePath_page_pointerout: EventListener<'pointerout'> = (event) => {
-    const page = document.getElementById('page') as HTMLDivElement | null;
-    if (page === null) return;
 
-    if (
-      event.clientX > page.clientWidth ||
-      event.clientX < page.clientLeft ||
-      event.clientY > page.clientHeight ||
-      event.clientY < page.clientTop
-    ) {
-      setEventState('searchPath');
-    }
-  };
-
-  const dragArea_page_pointermove_AreaUpdate: EventListener<'pointermove'> = (event) => {
+  const dragArea_document_pointermove_AreaUpdate: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     const drag: Coordinates = {
@@ -278,13 +265,13 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     const draggedArea = getDraggeddArea({ distanceOriginToDrag, origin: origin.current, drag });
     setDraggeddArea(draggedArea);
   };
-  const dragArea_page_pointermove_HitTest: EventListener<'pointermove'> = (event) => {
+  const dragArea_document_pointermove_HitTest: EventListener<'pointermove'> = () => {
     const newTextPaths = getNewTextPaths({ draggedArea, textPaths });
     const selectedPath = getNewSelectedArea(newTextPaths);
     setTextPaths(newTextPaths);
     setSelectedPath(selectedPath);
   };
-  const dragArea_page_pointerup: EventListener<'pointerup'> = (event) => {
+  const dragArea_document_pointerup: EventListener<'pointerup'> = (event) => {
     if (canvas.current === null) return;
     const rect = canvas.current.getBoundingClientRect();
     origin.current.x = event.pageX - rect.x;
@@ -295,7 +282,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   // イベントリスナ管理
   type EventState = 'searchPath' | 'movePath' | 'dragArea';
-  type ElementId = 'canvas' | 'page';
+  type ElementId = 'canvas' | 'page' | 'window' | 'document';
   const eventList: EventList<EventState, ElementId> = {
     searchPath: {
       canvas: {
@@ -304,16 +291,15 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       },
     },
     movePath: {
-      page: {
-        pointermove: [movePath_page_pointermove],
-        pointerup: [movePath_page_pointerup],
-        pointerout: [movePath_page_pointerout],
+      document: {
+        pointermove: [movePath_document_pointermove],
+        pointerup: [movePath_document_pointerup],
       },
     },
     dragArea: {
-      page: {
-        pointermove: [dragArea_page_pointermove_AreaUpdate, dragArea_page_pointermove_HitTest],
-        pointerup: [dragArea_page_pointerup],
+      document: {
+        pointermove: [dragArea_document_pointermove_AreaUpdate, dragArea_document_pointermove_HitTest],
+        pointerup: [dragArea_document_pointerup],
       },
     },
   };
