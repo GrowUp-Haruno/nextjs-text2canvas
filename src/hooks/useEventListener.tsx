@@ -28,14 +28,25 @@ function eventListenerManagement<EventState extends string, ElementId extends st
 ) {
   const eventListEntries = Object.entries(eventList[eventState]) as [ElementId, EventMap][];
   eventListEntries.forEach(([elementId, eventMap]) => {
-    const element = document.getElementById(elementId);
-    const eventSettingEntries = Object.entries(eventMap) as [EventKey, EventListener<EventKey>[]][];
+    if (elementId === 'window') {
+      const eventSettingEntries = Object.entries(eventMap) as [EventKey, EventListener<EventKey>[]][];
 
-    eventSettingEntries.forEach(([eventKey, eventListeners]) => {
-      eventListeners.forEach((eventListener) => {
-        if (eventManagementType === 'addEventListener') element?.addEventListener(eventKey, eventListener);
-        if (eventManagementType === 'removeEventListener') element?.removeEventListener(eventKey, eventListener);
+      eventSettingEntries.forEach(([eventKey, eventListeners]) => {
+        eventListeners.forEach((eventListener) => {
+          if (eventManagementType === 'addEventListener') window.addEventListener(eventKey, eventListener);
+          if (eventManagementType === 'removeEventListener') window.removeEventListener(eventKey, eventListener);
+        });
       });
-    });
+    } else {
+      const element = document.getElementById(elementId);
+      const eventSettingEntries = Object.entries(eventMap) as [EventKey, EventListener<EventKey>[]][];
+
+      eventSettingEntries.forEach(([eventKey, eventListeners]) => {
+        eventListeners.forEach((eventListener) => {
+          if (eventManagementType === 'addEventListener') element?.addEventListener(eventKey, eventListener);
+          if (eventManagementType === 'removeEventListener') element?.removeEventListener(eventKey, eventListener);
+        });
+      });
+    }
   });
 }
