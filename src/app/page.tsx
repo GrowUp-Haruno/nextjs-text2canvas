@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useTextToCanvas } from '../hooks/useTextToCanvas';
 import { Canvas } from './Canvas';
+// import { TextInput } from './TextInput';
 import { ToolPalettes } from './ToolPalettes';
 
 export default function Page() {

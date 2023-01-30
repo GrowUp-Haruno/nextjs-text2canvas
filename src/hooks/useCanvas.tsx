@@ -5,7 +5,7 @@ import { initialTextPath } from '../commons/initialTextPath';
 import { pathDraw } from '../commons/pathDraw';
 import { getDraggeddArea } from '../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../commons/setSelectedTextPath';
-import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
+import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../commons/setTextPathsFn';
 import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../types/TextPath';
 import { EventList, EventListener, useEventListener } from './useEventListener';
 import { useSystem } from './useSystem';
@@ -178,6 +178,16 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setSelectedPath(newSelectedPath);
     setEventState('movePath');
   };
+  const searchPath_document_keyup: EventListener<'keyup'> = (event) => {
+    if (event.key === 'Escape') {
+      setTextPaths(isSelectedReset);
+      setSelectedPath(initialTextPath);
+    }
+    if (event.key === 'Delete') {
+      setTextPaths(isSelectedDelete);
+      setSelectedPath(initialTextPath);
+    }
+  };
 
   const movePath_document_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
@@ -289,6 +299,9 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         pointermove: [searchPath_canvas_pointermove],
         pointerdown: [searchPath_canvas_pointerdown],
       },
+      document: {
+        keyup: [searchPath_document_keyup],
+      },
     },
     movePath: {
       document: {
@@ -305,5 +318,4 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   };
   const [eventState, setEventState] = useState<EventState>('searchPath');
   useEventListener(eventList, eventState, [textPaths, eventState]);
-  return { setSelectedPath };
 };

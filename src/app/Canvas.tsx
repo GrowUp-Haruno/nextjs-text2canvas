@@ -1,19 +1,16 @@
 'use client';
 import { FC, memo } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
-import { useKeyboard } from '../hooks/useKeyboard';
 import { TextPath } from '../types/TextPath';
 
 export const Canvas: FC<{
   textPaths: TextPath[];
   setTextPaths: React.Dispatch<React.SetStateAction<TextPath[]>>;
 }> = memo(({ textPaths, setTextPaths }) => {
-  const { setSelectedPath } = useCanvas({
+  useCanvas({
     textPaths,
     setTextPaths,
   });
-
-  useKeyboard({ textPaths, setTextPaths, setSelectedPath });
 
   return (
     <div>
