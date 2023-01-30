@@ -290,14 +290,52 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setEventState('searchPath');
   };
 
+  // ツールパレット関連
+  const select = useRef<HTMLDivElement | null>(null);
+  const text2path = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    select.current = document.getElementById('select') as HTMLDivElement | null;
+    text2path.current = document.getElementById('text2path') as HTMLDivElement | null;
+    if (select.current !== null) select.current.style.backgroundColor = 'rgb(30, 144, 255)';
+  }, []);
+  const searchPath_text2path_pointerdown: EventListener<'pointerdown'> = (event) => {
+    if (text2path.current === null) return;
+    if (select.current === null) return;
+    text2path.current.style.backgroundColor = 'rgb(30, 144, 255)';
+    select.current.style.backgroundColor = '#383838';
+    setEventState('text2path');
+  };
+  const text2path_select_pointerdown: EventListener<'pointerdown'> = (event) => {
+    if (text2path.current === null) return;
+    if (select.current === null) return;
+    select.current.style.backgroundColor = 'rgb(30, 144, 255)';
+    text2path.current.style.backgroundColor = '#383838';
+    setEventState('searchPath');
+  };
+  const toolHover: EventListener<'pointerenter'> = (event) => {
+    if (event.target instanceof HTMLDivElement) {
+      event.target.style.backgroundColor = '#181818';
+    }
+  };
+  const toolUnHover: EventListener<'pointerleave'> = (event) => {
+    if (event.target instanceof HTMLDivElement) {
+      event.target.style.backgroundColor = '#383838';
+    }
+  };
+
   // イベントリスナ管理
-  type EventState = 'searchPath' | 'movePath' | 'dragArea';
-  type ElementId = 'canvas' | 'page' | 'window' | 'document';
+  type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'text2path';
+  type ElementId = 'canvas' | 'page' | 'text2path' | 'select' | 'window' | 'document';
   const eventList: EventList<EventState, ElementId> = {
     searchPath: {
       canvas: {
         pointermove: [searchPath_canvas_pointermove],
         pointerdown: [searchPath_canvas_pointerdown],
+      },
+      text2path: {
+        pointerdown: [searchPath_text2path_pointerdown],
+        pointerenter: [toolHover],
+        pointerleave: [toolUnHover],
       },
       document: {
         keyup: [searchPath_document_keyup],
@@ -313,6 +351,13 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
       document: {
         pointermove: [dragArea_document_pointermove_AreaUpdate, dragArea_document_pointermove_HitTest],
         pointerup: [dragArea_document_pointerup],
+      },
+    },
+    text2path: {
+      select: {
+        pointerdown: [text2path_select_pointerdown],
+        pointerenter: [toolHover],
+        pointerleave: [toolUnHover],
       },
     },
   };
