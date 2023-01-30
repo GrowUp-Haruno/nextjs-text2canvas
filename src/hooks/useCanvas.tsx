@@ -59,11 +59,31 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
   }
 
+  const canvasResize = () => {
+    if (canvas.current === null) return;
+    const canvasArea = document.getElementById('canvasWrap');
+    if (canvasArea === null) return;
+    canvas.current.width = canvasArea.clientWidth;
+    canvas.current.height = canvasArea.clientHeight;
+    setTextPaths((prev) => [...prev]);
+  };
+  const disabledContextMenu: EventListener<'contextmenu'> = (event) => {
+    event.preventDefault();
+  };
+
   // canvas初期設定
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
     if (canvas.current === null) return;
     canvasCtx.current = canvas.current.getContext('2d');
+    canvasResize();
+
+    window.addEventListener('resize', canvasResize);
+    window.addEventListener('contextmenu', disabledContextMenu);
+    return () => {
+      window.removeEventListener('resize', canvasResize);
+      window.removeEventListener('contextmenu', disabledContextMenu);
+    };
   }, []);
 
   // 描画処理
@@ -325,7 +345,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   // イベントリスナ管理
   type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'text2path';
-  type ElementId = 'canvas' | 'page' | 'text2path' | 'select' | 'window' | 'document';
+  type ElementId = 'canvas' | 'text2path' | 'select' | 'window' | 'document';
   const eventList: EventList<EventState, ElementId> = {
     searchPath: {
       canvas: {
