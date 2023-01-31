@@ -14,13 +14,6 @@ body {
   -khtml-user-drag: none;
 }
 
-body {
-  height: 100vh;
-}
-body > div {
-  height: 100%;
-}
-
 a {
   color: inherit;
   text-decoration: none;
