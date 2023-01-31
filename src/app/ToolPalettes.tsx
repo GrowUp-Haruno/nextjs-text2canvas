@@ -1,14 +1,10 @@
-import styles from './toolpalettes.module.css';
+import { FC } from 'react';
+import styles from '../styles/toolpalettes.module.css';
 
-export const ToolPalettes = () => {
+export const ToolPalettes: FC<{ tools: JSX.Element[] }> = ({ tools }) => {
   return (
     <div id="toolpalettes" className={styles.toolpalettes}>
-      <div id="select" className={styles.tool}>
-        <div>↖︎</div>
-      </div>
-      <div id="text2path" className={styles.tool}>
-        <div>T</div>
-      </div>
+      {tools}
     </div>
   );
 };

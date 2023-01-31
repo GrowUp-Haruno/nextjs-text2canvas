@@ -15,3 +15,11 @@
   align-items: center;
   color: white;
 }
+
+.unselected.tool:hover {
+  background-color: rgb(24, 24, 24);
+}
+
+.selected.tool {
+  background-color: rgb(30, 144, 255);
+}
