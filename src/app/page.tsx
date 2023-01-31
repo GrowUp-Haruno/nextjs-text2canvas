@@ -1,23 +1,25 @@
 'use client';
+import { useEffect, useRef } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
 import { useTextToCanvas } from '../hooks/useTextToCanvas';
-import { Canvas } from './Canvas';
-import { TextInput } from './TextInput';
-import { ToolPalettes } from './ToolPalettes';
 import { useToolpalettes } from '../hooks/useToolpalettes';
 
+import styles from '../styles/page.module.css';
+import { TextInput } from './TextInput';
+
 export default function Page() {
-  // const { inputText, isLoading, textPaths, changeInput, addText2Path, setTextPaths } = useTextToCanvas();
-  // useCanvas({
-  //   textPaths,
-  //   setTextPaths,
-  // });
   const { selectedTool, tools } = useToolpalettes();
+  const { inputText, isLoading, textPaths, changeInput, addText2Path, setTextPaths } = useTextToCanvas();
+  useCanvas({
+    textPaths,
+    setTextPaths,
+    selectedTool,
+  });
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh' }}>
-      <ToolPalettes tools={tools} />
-      {/* <TextInput inputText={inputText} isLoading={isLoading} changeInput={changeInput} addText2Path={addText2Path} /> */}
-      <Canvas />
+    <div id="page" style={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh' }}>
+      <div id="toolpalettes" className={styles.toolpalettes} children={tools} />
+      <canvas id="canvas" className={styles.canvas} />
     </div>
   );
 }

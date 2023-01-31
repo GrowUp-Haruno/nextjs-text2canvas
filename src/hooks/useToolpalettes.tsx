@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
-import styles from '../styles/toolpalettes.module.css';
-type ToolId = 'tool-select' | 'tool-text2Path';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import styles from '../styles/page.module.css';
+
+export type ToolId = 'tool-select' | 'tool-text2Path';
 type ToolObj = {
   icon: string;
   id: ToolId;

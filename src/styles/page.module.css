@@ -23,3 +23,8 @@
 .selected.tool {
   background-color: rgb(30, 144, 255);
 }
+
+.canvas {
+  flex-grow: 1;
+  background-color: #e6e6e6;
+}

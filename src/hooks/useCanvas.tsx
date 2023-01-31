@@ -9,13 +9,15 @@ import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../commons/s
 import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../types/TextPath';
 import { EventList, EventListener, useEventListener } from './useEventListener';
 import { useSystem } from './useSystem';
+import { ToolId } from './useToolpalettes';
 
 type HooksArg = {
   textPaths: TextPath[];
   setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
+  selectedTool: ToolId;
 };
 
-export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
+export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) => {
   const [selectedPath, setSelectedPath] = useState(initialTextPath);
   const [draggedArea, setDraggeddArea] = useState(initialTextPath);
   const { system } = useSystem();
@@ -61,10 +63,8 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
 
   const canvasResize = () => {
     if (canvas.current === null) return;
-    const canvasArea = document.getElementById('canvasWrap');
-    if (canvasArea === null) return;
-    canvas.current.width = canvasArea.clientWidth;
-    canvas.current.height = canvasArea.clientHeight;
+    canvas.current.width = canvas.current.clientWidth;
+    canvas.current.height = canvas.current.clientHeight;
     setTextPaths((prev) => [...prev]);
   };
   const disabledContextMenu: EventListener<'contextmenu'> = (event) => {
@@ -311,52 +311,23 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
   };
 
   // ツールパレット関連
-  const select = useRef<HTMLDivElement | null>(null);
-  const text2path = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    select.current = document.getElementById('select') as HTMLDivElement | null;
-    text2path.current = document.getElementById('text2path') as HTMLDivElement | null;
-    if (select.current !== null) select.current.style.backgroundColor = 'rgb(30, 144, 255)';
-  }, []);
-  const searchPath_text2path_pointerdown: EventListener<'pointerdown'> = (event) => {
-    if (text2path.current === null) return;
-    if (select.current === null) return;
-    text2path.current.style.backgroundColor = 'rgb(30, 144, 255)';
-    select.current.style.backgroundColor = '#383838';
-    setEventState('text2path');
-  };
-  const text2path_select_pointerdown: EventListener<'pointerdown'> = (event) => {
-    if (text2path.current === null) return;
-    if (select.current === null) return;
-    select.current.style.backgroundColor = 'rgb(30, 144, 255)';
-    text2path.current.style.backgroundColor = '#383838';
-    setEventState('searchPath');
-  };
-  const toolHover: EventListener<'pointerenter'> = (event) => {
-    if (event.target instanceof HTMLDivElement) {
-      event.target.style.backgroundColor = '#181818';
-    }
-  };
-  const toolUnHover: EventListener<'pointerleave'> = (event) => {
-    if (event.target instanceof HTMLDivElement) {
-      event.target.style.backgroundColor = '#383838';
-    }
-  };
+    console.log(selectedTool);
+    
+    if (selectedTool === 'tool-select') setEventState('searchPath');
+    else if (selectedTool === 'tool-text2Path') setEventState('text2path');
+  }, [selectedTool]);
 
   // イベントリスナ管理
   type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'text2path';
-  type ElementId = 'canvas' | 'text2path' | 'select' | 'window' | 'document';
+  type ElementId = 'canvas' | 'window' | 'document';
   const eventList: EventList<EventState, ElementId> = {
     searchPath: {
       canvas: {
         pointermove: [searchPath_canvas_pointermove],
         pointerdown: [searchPath_canvas_pointerdown],
       },
-      text2path: {
-        pointerdown: [searchPath_text2path_pointerdown],
-        pointerenter: [toolHover],
-        pointerleave: [toolUnHover],
-      },
+
       document: {
         keyup: [searchPath_document_keyup],
       },
@@ -373,13 +344,7 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         pointerup: [dragArea_document_pointerup],
       },
     },
-    text2path: {
-      select: {
-        pointerdown: [text2path_select_pointerdown],
-        pointerenter: [toolHover],
-        pointerleave: [toolUnHover],
-      },
-    },
+    text2path: {},
   };
   const [eventState, setEventState] = useState<EventState>('searchPath');
   useEventListener(eventList, eventState, [textPaths, eventState]);
