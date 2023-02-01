@@ -5,10 +5,10 @@ import { initialTextPath } from '../../commons/initialTextPath';
 import { pathDraw } from '../../commons/pathDraw';
 import { getDraggeddArea } from '../../commons/setDraggeddArea';
 import { getNewSelectedArea } from '../../commons/setSelectedTextPath';
-import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../../commons/setTextPathsFn';
 import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../../types/TextPath';
-import { EventList, EventListener, useEventListener } from '../../hooks/useEventListener';
-import { useSystem } from '../../hooks/useSystem';
+import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../../commons/setTextPathsFn';
+import { EventList, EventListener, useEventListener } from '../../commons/useEventListener';
+import { useSystem } from '../../commons/useSystem';
 import { ToolId } from '../ToolPalettes/useToolpalettes';
 
 type HooksArg = {
