@@ -332,8 +332,6 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
 
   // ツールパレット関連
   useEffect(() => {
-    console.log(selectedTool);
-
     if (selectedTool === 'tool-select') setEventState('searchPath');
     else if (selectedTool === 'tool-text2Path') setEventState('text2path');
   }, [selectedTool]);
