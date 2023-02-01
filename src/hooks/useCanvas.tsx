@@ -1,4 +1,4 @@
-import { useEffect, useRef, Dispatch, SetStateAction, useState } from 'react';
+import { useEffect, useRef, Dispatch, SetStateAction, useState, LegacyRef } from 'react';
 import { getPath2D } from '../commons/getPath2D';
 import { getSelectedPath2D } from '../commons/getSelectedPath2D';
 import { initialTextPath } from '../commons/initialTextPath';
@@ -310,10 +310,30 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
     setEventState('searchPath');
   };
 
+  const text2path_canvas_pointermove: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+    canvas.current.style.cursor = 'text';
+  };
+  const text2path_canvas_click: EventListener<'click'> = (event) => {
+    const canvasmodal = document.getElementById('canvasmodal');
+    const canvasinput = document.getElementById('canvasinput');
+    const canvasmodalContet = document.getElementById('canvasmodalContet');
+
+    if (canvasmodal === null) return;
+    if (canvasinput === null) return;
+    if (canvasmodalContet === null) return;
+
+    canvasmodal.style.display = 'block';
+    canvasmodalContet.style.left = `${event.pageX}px`;
+    canvasmodalContet.style.top = `${event.pageY}px`;
+
+    canvasinput.focus();
+  };
+
   // ツールパレット関連
   useEffect(() => {
     console.log(selectedTool);
-    
+
     if (selectedTool === 'tool-select') setEventState('searchPath');
     else if (selectedTool === 'tool-text2Path') setEventState('text2path');
   }, [selectedTool]);
@@ -344,7 +364,12 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
         pointerup: [dragArea_document_pointerup],
       },
     },
-    text2path: {},
+    text2path: {
+      canvas: {
+        pointermove: [text2path_canvas_pointermove],
+        click: [text2path_canvas_click],
+      },
+    },
   };
   const [eventState, setEventState] = useState<EventState>('searchPath');
   useEventListener(eventList, eventState, [textPaths, eventState]);
