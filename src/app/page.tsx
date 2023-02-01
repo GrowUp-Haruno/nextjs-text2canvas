@@ -1,13 +1,16 @@
 'use client';
 import { Text2Path } from '../components/Text2Path';
-import { useCanvas } from '../hooks/useCanvas';
-import { useTextToCanvas } from '../hooks/useTextToCanvas';
-import { useToolpalettes } from '../hooks/useToolpalettes';
-import styles from '../styles/page.module.css';
+import { useText2Path } from '../components/Text2Path/useText2Path';
+import { useCanvas } from '../components/Canvas/useCanvas';
+
+import { useToolpalettes } from '../components/ToolPalettes/useToolpalettes';
+import styles from './page.module.css';
+import { ToolPalettes } from '../components/ToolPalettes';
+import { Canvas } from '../components/Canvas';
 
 export default function Page() {
   const { selectedTool, tools } = useToolpalettes();
-  const { inputText, isLoading, textPaths, changeInput, addText2Path, setTextPaths } = useTextToCanvas();
+  const { inputText, isLoading, textPaths, changeInput, addText2Path, setTextPaths } = useText2Path();
   useCanvas({
     textPaths,
     setTextPaths,
@@ -15,9 +18,9 @@ export default function Page() {
   });
 
   return (
-    <div id="page" style={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh' }}>
-      <div id="toolpalettes" className={styles.toolpalettes} children={tools} />
-      <canvas id="canvas" className={styles.canvas} />
+    <div id="page" className={styles.page}>
+      <ToolPalettes tools={tools} />
+      <Canvas />
       <Text2Path />
     </div>
   );
