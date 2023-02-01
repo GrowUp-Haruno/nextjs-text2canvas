@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import styles from '../styles/page.module.css';
+import styles from './toolpalettes.module.css';
 
 export type ToolId = 'tool-select' | 'tool-text2Path';
 type ToolObj = {
