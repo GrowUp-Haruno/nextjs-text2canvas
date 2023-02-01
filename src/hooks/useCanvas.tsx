@@ -315,19 +315,19 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
     canvas.current.style.cursor = 'text';
   };
   const text2path_canvas_click: EventListener<'click'> = (event) => {
-    const canvasmodal = document.getElementById('canvasmodal');
-    const canvasinput = document.getElementById('canvasinput');
-    const canvasmodalContet = document.getElementById('canvasmodalContet');
+    const modal = document.getElementById('text2path-modal');
+    const modalcontent = document.getElementById('text2path-modalcontent');
+    const input = document.getElementById('text2path-input');
 
-    if (canvasmodal === null) return;
-    if (canvasinput === null) return;
-    if (canvasmodalContet === null) return;
+    if (modal === null) return;
+    if (modalcontent === null) return;
+    if (input === null) return;
 
-    canvasmodal.style.display = 'block';
-    canvasmodalContet.style.left = `${event.pageX}px`;
-    canvasmodalContet.style.top = `${event.pageY}px`;
+    modal.style.display = 'block';
+    modalcontent.style.left = `${event.pageX}px`;
+    modalcontent.style.top = `${event.pageY}px`;
 
-    canvasinput.focus();
+    input.focus();
   };
 
   // ツールパレット関連
