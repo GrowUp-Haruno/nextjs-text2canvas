@@ -1,15 +1,15 @@
 import { useEffect, useRef, Dispatch, SetStateAction, useState, LegacyRef } from 'react';
-import { getPath2D } from '../commons/getPath2D';
-import { getSelectedPath2D } from '../commons/getSelectedPath2D';
-import { initialTextPath } from '../commons/initialTextPath';
-import { pathDraw } from '../commons/pathDraw';
-import { getDraggeddArea } from '../commons/setDraggeddArea';
-import { getNewSelectedArea } from '../commons/setSelectedTextPath';
-import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../commons/setTextPathsFn';
-import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../types/TextPath';
-import { EventList, EventListener, useEventListener } from './useEventListener';
-import { useSystem } from './useSystem';
-import { ToolId } from './useToolpalettes';
+import { getPath2D } from '../../commons/getPath2D';
+import { getSelectedPath2D } from '../../commons/getSelectedPath2D';
+import { initialTextPath } from '../../commons/initialTextPath';
+import { pathDraw } from '../../commons/pathDraw';
+import { getDraggeddArea } from '../../commons/setDraggeddArea';
+import { getNewSelectedArea } from '../../commons/setSelectedTextPath';
+import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../../commons/setTextPathsFn';
+import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../../types/TextPath';
+import { EventList, EventListener, useEventListener } from '../../hooks/useEventListener';
+import { useSystem } from '../../hooks/useSystem';
+import { ToolId } from '../ToolPalettes/useToolpalettes';
 
 type HooksArg = {
   textPaths: TextPath[];
