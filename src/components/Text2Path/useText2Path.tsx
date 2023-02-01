@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getPath2D } from '../commons/getPath2D';
-import { getSelectedPath2D } from '../commons/getSelectedPath2D';
-import { getTextPath } from '../commons/getTextPath';
-import { TextPath } from '../types/TextPath';
+import { getPath2D } from '../../commons/getPath2D';
+import { getSelectedPath2D } from '../../commons/getSelectedPath2D';
+import { getTextPath } from '../../commons/getTextPath';
+import { TextPath } from '../../types/TextPath';
 
-export const useTextToCanvas = () => {
+export const useText2Path = () => {
   const maxNameLength = 20;
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [inputText, setInputText] = useState<string>('');

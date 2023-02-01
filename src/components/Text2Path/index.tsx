@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal } from './Modal';
+import { Modal } from '../Modal';
 
 export const Text2Path = () => {
   return (
