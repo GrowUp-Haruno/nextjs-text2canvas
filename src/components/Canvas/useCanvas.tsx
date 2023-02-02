@@ -320,10 +320,20 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
     const modalcontent = document.getElementById('text2path-modalcontent');
     const input = document.getElementById('text2path-input') as HTMLInputElement | null;
     const button = document.getElementById('text2path-button') as HTMLButtonElement | null;
-
     modal!.style.display = 'block';
-    modalcontent!.style.left = `${event.pageX}px`;
-    modalcontent!.style.top = `${event.pageY}px`;
+
+    if (event.pageX + modalcontent!.clientWidth > modal!.clientWidth) {
+      modalcontent!.style.left = `${modal!.clientWidth - modalcontent!.clientWidth}px`;
+    } else {
+      modalcontent!.style.left = `${event.pageX}px`;
+    }
+    
+    if (event.pageY + modalcontent!.clientHeight > modal!.clientHeight) {
+      modalcontent!.style.top = `${modal!.clientHeight - modalcontent!.clientHeight}px`;
+    } else {
+      modalcontent!.style.top = `${event.pageY}px`;
+    }
+
     input!.disabled = false;
     button!.disabled = false;
     input!.focus();

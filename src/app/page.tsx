@@ -10,7 +10,7 @@ import { Canvas } from '../components/Canvas';
 
 export default function Page() {
   const { selectedTool, tools } = useToolpalettes();
-  const { inputText, isLoading, textPaths, changeInput, addText2Path, setTextPaths } = useText2Path();
+  const { textPaths, setTextPaths } = useText2Path();
   useCanvas({
     textPaths,
     setTextPaths,
