@@ -13,4 +13,6 @@
   position: absolute;
   left: 0;
   top: 0;
+  display: flex;
+  gap: 4px;
 }
