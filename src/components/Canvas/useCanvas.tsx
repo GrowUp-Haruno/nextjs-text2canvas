@@ -324,10 +324,11 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
 
     if (event.pageX + modalcontent!.clientWidth > modal!.clientWidth) {
       modalcontent!.style.left = `${modal!.clientWidth - modalcontent!.clientWidth}px`;
+      input!.style.textAlign = 'right';
     } else {
       modalcontent!.style.left = `${event.pageX}px`;
     }
-    
+
     if (event.pageY + modalcontent!.clientHeight > modal!.clientHeight) {
       modalcontent!.style.top = `${modal!.clientHeight - modalcontent!.clientHeight}px`;
     } else {
