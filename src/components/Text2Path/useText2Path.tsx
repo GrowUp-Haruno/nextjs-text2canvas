@@ -55,7 +55,7 @@ export const useText2Path = () => {
     input.current!.value = '';
     input.current!.disabled = true;
     button.current!.disabled = true;
-    
+
     const canvas = document.getElementById('canvas');
     canvas!.style.cursor = 'wait';
 
@@ -63,14 +63,29 @@ export const useText2Path = () => {
     const comandsExists = textPath.commands.length !== 0;
     if (comandsExists) {
       const ToolPalettesHeight = 48; //px
-      const shiftX = Number(modalcontent.current!.style.left.replace('px', ''));
-      const shiftY = Number(modalcontent.current!.style.top.replace('px', '')) - ToolPalettesHeight;
-      textPath.offset.x += shiftX;
-      textPath.offset.y += shiftY;
-      textPath.selectedArea.x += shiftX;
-      textPath.selectedArea.y += shiftY;
-      textPath.selectedArea.centerX += shiftX;
-      textPath.selectedArea.centerY += shiftY;
+      const shift = {
+        x: 0,
+        y: 0,
+      };
+      const tentativeShift = {
+        x: Number(modalcontent.current!.style.left.replace('px', '')),
+        y: Number(modalcontent.current!.style.top.replace('px', '')) - ToolPalettesHeight,
+      };
+
+      if (input.current!.style.textAlign === 'left') shift.x = tentativeShift.x;
+      else shift.x = canvas!.clientWidth - textPath.selectedArea.w;
+
+      if (tentativeShift.y + textPath.selectedArea.h < canvas!.clientHeight) shift.y = tentativeShift.y;
+      else shift.y = canvas!.clientHeight - textPath.selectedArea.h;
+
+      textPath.offset.x += shift.x;
+      textPath.selectedArea.x += shift.x;
+      textPath.selectedArea.centerX += shift.x;
+
+      textPath.offset.y += shift.y;
+      textPath.selectedArea.y += shift.y;
+      textPath.selectedArea.centerY += shift.y;
+
       textPath.path2D = getPath2D(textPath);
       textPath.selectedPath2D = getSelectedPath2D({ textPath });
       setTextPaths((prev) => [...prev, textPath]);
