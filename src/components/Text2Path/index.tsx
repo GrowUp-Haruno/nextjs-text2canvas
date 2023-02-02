@@ -9,12 +9,9 @@ export const Text2Path = () => {
         id="text2path-input"
         type="text"
         autoComplete="off"
-        // onChange={changeInput}
-        // value={inputText}
-        // disabled={isLoading}
         style={{ padding: '8px 8px' }}
       />
-      {/* <button onClick={addText2Path} disabled={isLoading} children="追加" style={{ height: '100%' }} /> */}
+      <button id="text2path-button" children="追加" style={{ height: '100%' }} />
     </Modal>
   );
 };

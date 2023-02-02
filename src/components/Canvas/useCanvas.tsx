@@ -314,20 +314,19 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
     if (canvas.current === null) return;
     canvas.current.style.cursor = 'text';
   };
-  const text2path_canvas_click: EventListener<'click'> = (event) => {
+  const text2path_canvas_pointerdown: EventListener<'pointerdown'> = (event) => {
+    event.preventDefault();
     const modal = document.getElementById('text2path-modal');
     const modalcontent = document.getElementById('text2path-modalcontent');
-    const input = document.getElementById('text2path-input');
+    const input = document.getElementById('text2path-input') as HTMLInputElement | null;
+    const button = document.getElementById('text2path-button') as HTMLButtonElement | null;
 
-    if (modal === null) return;
-    if (modalcontent === null) return;
-    if (input === null) return;
-
-    modal.style.display = 'block';
-    modalcontent.style.left = `${event.pageX}px`;
-    modalcontent.style.top = `${event.pageY}px`;
-
-    input.focus();
+    modal!.style.display = 'block';
+    modalcontent!.style.left = `${event.pageX}px`;
+    modalcontent!.style.top = `${event.pageY}px`;
+    input!.disabled = false;
+    button!.disabled = false;
+    input!.focus();
   };
 
   // ツールパレット関連
@@ -365,7 +364,7 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
     text2path: {
       canvas: {
         pointermove: [text2path_canvas_pointermove],
-        click: [text2path_canvas_click],
+        pointerdown: [text2path_canvas_pointerdown],
       },
     },
   };
