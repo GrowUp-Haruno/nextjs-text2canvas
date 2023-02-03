@@ -101,9 +101,13 @@ export const useText2Path = () => {
   };
 
   const eventCancel: EventListener<'keydown'> = (event) => {
-    if (modal.current!.style.display === 'block') {
-      console.log(event);
-    }
+    if (modal.current!.style.display !== 'block') return;
+    if (event.key !== 'Escape') return;
+    modal.current!.style.display = 'none';
+    input.current!.disabled = true;
+    button.current!.disabled = true;
+    input.current!.value = '';
+    setInputText('');
   };
 
   const toolSelectClick = () => {
