@@ -1,3 +1,6 @@
+# 旧式TextInput
+
+```tsx
 'use client';
 import { memo, FC, CSSProperties } from 'react';
 
@@ -19,3 +22,4 @@ export const TextInput: FC<{
     </div>
   );
 });
+```

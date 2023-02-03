@@ -1,12 +1,27 @@
-import { Suspense } from 'react';
-import { TextToCanvas } from './TextToCanvas';
+'use client';
+import { Text2Path } from '../components/Text2Path';
+import { useText2Path } from '../components/Text2Path/useText2Path';
+import { useCanvas } from '../components/Canvas/useCanvas';
+
+import { useToolpalettes } from '../components/ToolPalettes/useToolpalettes';
+import styles from './page.module.css';
+import { ToolPalettes } from '../components/ToolPalettes';
+import { Canvas } from '../components/Canvas';
 
 export default function Page() {
+  const { selectedTool, tools } = useToolpalettes();
+  const { textPaths, setTextPaths } = useText2Path();
+  useCanvas({
+    textPaths,
+    setTextPaths,
+    selectedTool,
+  });
+
   return (
-    <div style={{ padding: '16px', height: '95%' }} id="page">
-      <Suspense fallback={<p>システムローディング中</p>}>
-        <TextToCanvas />
-      </Suspense>
+    <div id="page" className={styles.page}>
+      <ToolPalettes tools={tools} />
+      <Canvas />
+      <Text2Path />
     </div>
   );
 }

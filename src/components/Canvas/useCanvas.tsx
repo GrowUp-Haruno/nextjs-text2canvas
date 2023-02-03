@@ -1,21 +1,23 @@
-import { useEffect, useRef, Dispatch, SetStateAction, useState } from 'react';
-import { getPath2D } from '../commons/getPath2D';
-import { getSelectedPath2D } from '../commons/getSelectedPath2D';
-import { initialTextPath } from '../commons/initialTextPath';
-import { pathDraw } from '../commons/pathDraw';
-import { getDraggeddArea } from '../commons/setDraggeddArea';
-import { getNewSelectedArea } from '../commons/setSelectedTextPath';
-import { getNewTextPaths, isSelectedReset } from '../commons/setTextPathsFn';
-import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../types/TextPath';
-import { EventList, EventListener, useEventListener } from './useEventListener';
-import { useSystem } from './useSystem';
+import { useEffect, useRef, Dispatch, SetStateAction, useState, LegacyRef } from 'react';
+import { getPath2D } from '../../commons/getPath2D';
+import { getSelectedPath2D } from '../../commons/getSelectedPath2D';
+import { initialTextPath } from '../../commons/initialTextPath';
+import { pathDraw } from '../../commons/pathDraw';
+import { getDraggeddArea } from '../../commons/setDraggeddArea';
+import { getNewSelectedArea } from '../../commons/setSelectedTextPath';
+import { TextPath, Coordinates, SelectedArea, PathClickPosition } from '../../types/TextPath';
+import { getNewTextPaths, isSelectedDelete, isSelectedReset } from '../../commons/setTextPathsFn';
+import { EventList, EventListener, useEventListener } from '../../commons/useEventListener';
+import { useSystem } from '../../commons/useSystem';
+import { ToolId } from '../ToolPalettes/useToolpalettes';
 
 type HooksArg = {
   textPaths: TextPath[];
   setTextPaths: Dispatch<SetStateAction<TextPath[]>>;
+  selectedTool: ToolId;
 };
 
-export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
+export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) => {
   const [selectedPath, setSelectedPath] = useState(initialTextPath);
   const [draggedArea, setDraggeddArea] = useState(initialTextPath);
   const { system } = useSystem();
@@ -59,11 +61,29 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     };
   }
 
+  const canvasResize = () => {
+    if (canvas.current === null) return;
+    canvas.current.width = canvas.current.clientWidth;
+    canvas.current.height = canvas.current.clientHeight;
+    setTextPaths((prev) => [...prev]);
+  };
+  const disabledContextMenu: EventListener<'contextmenu'> = (event) => {
+    event.preventDefault();
+  };
+
   // canvas初期設定
   useEffect(() => {
     canvas.current = document.getElementById('canvas') as HTMLCanvasElement | null;
     if (canvas.current === null) return;
     canvasCtx.current = canvas.current.getContext('2d');
+    canvasResize();
+
+    window.addEventListener('resize', canvasResize);
+    window.addEventListener('contextmenu', disabledContextMenu);
+    return () => {
+      window.removeEventListener('resize', canvasResize);
+      window.removeEventListener('contextmenu', disabledContextMenu);
+    };
   }, []);
 
   // 描画処理
@@ -178,6 +198,16 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setSelectedPath(newSelectedPath);
     setEventState('movePath');
   };
+  const searchPath_document_keydown: EventListener<'keydown'> = (event) => {
+    if (event.key === 'Escape') {
+      setTextPaths(isSelectedReset);
+      setSelectedPath(initialTextPath);
+    }
+    if (event.key === 'Delete') {
+      setTextPaths(isSelectedDelete);
+      setSelectedPath(initialTextPath);
+    }
+  };
 
   const movePath_document_pointermove: EventListener<'pointermove'> = (event) => {
     if (canvas.current === null) return;
@@ -280,14 +310,61 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
     setEventState('searchPath');
   };
 
+  const text2path_canvas_pointermove: EventListener<'pointermove'> = (event) => {
+    if (canvas.current === null) return;
+    canvas.current.style.cursor = 'text';
+  };
+  const text2path_canvas_pointerdown: EventListener<'pointerdown'> = (event) => {
+    event.preventDefault();
+
+    setTextPaths(isSelectedReset);
+    setSelectedPath(initialTextPath);
+
+    const page = document.getElementById('page');
+    const modal = document.getElementById('text2path-modal');
+    const modalcontent = document.getElementById('text2path-modalcontent');
+    const input = document.getElementById('text2path-input') as HTMLInputElement | null;
+    const button = document.getElementById('text2path-button') as HTMLButtonElement | null;
+    modal!.style.display = 'block';
+
+    if (event.pageX + modal!.clientWidth > page!.clientWidth) {
+      modal!.style.left = `${page!.clientWidth - modal!.clientWidth}px`;
+      input!.style.textAlign = 'right';
+      modalcontent!.style.flexDirection = 'row-reverse';
+    } else {
+      modal!.style.left = `${event.pageX}px`;
+      input!.style.textAlign = 'left';
+      modalcontent!.style.flexDirection = 'row';
+    }
+
+    if (event.pageY + modal!.clientHeight > page!.clientHeight) {
+      modal!.style.top = `${page!.clientHeight - modal!.clientHeight}px`;
+    } else {
+      modal!.style.top = `${event.pageY}px`;
+    }
+
+    input!.disabled = false;
+    button!.disabled = false;
+    input!.focus();
+  };
+
+  // ツールパレット関連
+  useEffect(() => {
+    if (selectedTool === 'tool-select') setEventState('searchPath');
+    else if (selectedTool === 'tool-text2Path') setEventState('text2path');
+  }, [selectedTool]);
+
   // イベントリスナ管理
-  type EventState = 'searchPath' | 'movePath' | 'dragArea';
-  type ElementId = 'canvas' | 'page' | 'window' | 'document';
+  type EventState = 'searchPath' | 'movePath' | 'dragArea' | 'text2path';
+  type ElementId = 'canvas' | 'window' | 'document';
   const eventList: EventList<EventState, ElementId> = {
     searchPath: {
       canvas: {
         pointermove: [searchPath_canvas_pointermove],
         pointerdown: [searchPath_canvas_pointerdown],
+      },
+      document: {
+        keydown: [searchPath_document_keydown],
       },
     },
     movePath: {
@@ -302,8 +379,13 @@ export const useCanvas = ({ textPaths, setTextPaths }: HooksArg) => {
         pointerup: [dragArea_document_pointerup],
       },
     },
+    text2path: {
+      canvas: {
+        pointermove: [text2path_canvas_pointermove],
+        pointerdown: [text2path_canvas_pointerdown],
+      },
+    },
   };
   const [eventState, setEventState] = useState<EventState>('searchPath');
   useEventListener(eventList, eventState, [textPaths, eventState]);
-  return { setSelectedPath };
 };

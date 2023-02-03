@@ -1,0 +1,12 @@
+.modal {
+  display: none;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  position: absolute;
+}
+
+.modalcontent {
+  display: flex;
+  gap: 4px;
+}
