@@ -198,7 +198,7 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
     setSelectedPath(newSelectedPath);
     setEventState('movePath');
   };
-  const searchPath_document_keyup: EventListener<'keyup'> = (event) => {
+  const searchPath_document_keydown: EventListener<'keydown'> = (event) => {
     if (event.key === 'Escape') {
       setTextPaths(isSelectedReset);
       setSelectedPath(initialTextPath);
@@ -363,9 +363,8 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
         pointermove: [searchPath_canvas_pointermove],
         pointerdown: [searchPath_canvas_pointerdown],
       },
-
       document: {
-        keyup: [searchPath_document_keyup],
+        keydown: [searchPath_document_keydown],
       },
     },
     movePath: {
