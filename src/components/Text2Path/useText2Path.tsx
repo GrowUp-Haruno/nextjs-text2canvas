@@ -68,8 +68,8 @@ export const useText2Path = () => {
         y: 0,
       };
       const tentativeShift = {
-        x: Number(modalcontent.current!.style.left.replace('px', '')),
-        y: Number(modalcontent.current!.style.top.replace('px', '')) - ToolPalettesHeight,
+        x: Number(modal.current!.style.left.replace('px', '')),
+        y: Number(modal.current!.style.top.replace('px', '')) - ToolPalettesHeight,
       };
 
       if (input.current!.style.textAlign === 'left') shift.x = tentativeShift.x;

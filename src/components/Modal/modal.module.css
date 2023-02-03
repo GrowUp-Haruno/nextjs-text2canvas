@@ -1,18 +1,12 @@
 .modal {
   display: none;
   z-index: 1;
-  position: fixed;
   left: 0;
   top: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: auto;
+  position: absolute;
 }
 
 .modalcontent {
-  position: absolute;
-  left: 0;
-  top: 0;
   display: flex;
   gap: 4px;
 }

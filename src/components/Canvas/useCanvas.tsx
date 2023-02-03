@@ -316,26 +316,27 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
   };
   const text2path_canvas_pointerdown: EventListener<'pointerdown'> = (event) => {
     event.preventDefault();
+    const page = document.getElementById('page');
     const modal = document.getElementById('text2path-modal');
     const modalcontent = document.getElementById('text2path-modalcontent');
     const input = document.getElementById('text2path-input') as HTMLInputElement | null;
     const button = document.getElementById('text2path-button') as HTMLButtonElement | null;
     modal!.style.display = 'block';
 
-    if (event.pageX + modalcontent!.clientWidth > modal!.clientWidth) {
-      modalcontent!.style.left = `${modal!.clientWidth - modalcontent!.clientWidth}px`;
+    if (event.pageX + modal!.clientWidth > page!.clientWidth) {
+      modal!.style.left = `${page!.clientWidth - modal!.clientWidth}px`;
       input!.style.textAlign = 'right';
       modalcontent!.style.flexDirection = 'row-reverse';
     } else {
-      modalcontent!.style.left = `${event.pageX}px`;
+      modal!.style.left = `${event.pageX}px`;
       input!.style.textAlign = 'left';
       modalcontent!.style.flexDirection = 'row';
     }
 
-    if (event.pageY + modalcontent!.clientHeight > modal!.clientHeight) {
-      modalcontent!.style.top = `${modal!.clientHeight - modalcontent!.clientHeight}px`;
+    if (event.pageY + modal!.clientHeight > page!.clientHeight) {
+      modal!.style.top = `${page!.clientHeight - modal!.clientHeight}px`;
     } else {
-      modalcontent!.style.top = `${event.pageY}px`;
+      modal!.style.top = `${event.pageY}px`;
     }
 
     input!.disabled = false;
