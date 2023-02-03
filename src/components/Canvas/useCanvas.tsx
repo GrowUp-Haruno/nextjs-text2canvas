@@ -316,6 +316,10 @@ export const useCanvas = ({ textPaths, setTextPaths, selectedTool }: HooksArg) =
   };
   const text2path_canvas_pointerdown: EventListener<'pointerdown'> = (event) => {
     event.preventDefault();
+
+    setTextPaths(isSelectedReset);
+    setSelectedPath(initialTextPath);
+
     const page = document.getElementById('page');
     const modal = document.getElementById('text2path-modal');
     const modalcontent = document.getElementById('text2path-modalcontent');
