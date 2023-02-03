@@ -23,7 +23,7 @@ export const useToolpalettes = () => {
 
         return (
           <div
-            id="text2path"
+            id={tool.id}
             className={`${styles.tool} ${selected}`}
             key={tool.id}
             onClick={() => {

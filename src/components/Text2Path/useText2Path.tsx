@@ -14,6 +14,7 @@ export const useText2Path = () => {
   const modalcontent = useRef<HTMLDivElement | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
   const button = useRef<HTMLButtonElement | null>(null);
+  const toolSelect = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +33,10 @@ export const useText2Path = () => {
       const buttonElement = document.getElementById('text2path-button');
       if (!(buttonElement instanceof HTMLButtonElement)) return;
       button.current = buttonElement;
+
+      const toolElement = document.getElementById('tool-select');
+      if (!(toolElement instanceof HTMLDivElement)) return;
+      toolSelect.current = toolElement;
 
       input.current.disabled = true;
       button.current.disabled = true;
@@ -95,12 +100,30 @@ export const useText2Path = () => {
     canvas!.style.cursor = 'text';
   };
 
+  const eventCancel: EventListener<'keydown'> = (event) => {
+    if (modal.current!.style.display === 'block') {
+      console.log(event);
+    }
+  };
+
+  const toolSelectClick = () => {
+    modal.current!.style.display = 'none';
+    input.current!.disabled = true;
+    button.current!.disabled = true;
+    input.current!.value = '';
+    setInputText('');
+  };
+
   useEffect(() => {
     input.current!.addEventListener('input', changeInput);
     button.current!.addEventListener('click', addText2Path);
+    toolSelect.current!.addEventListener('click', toolSelectClick);
+    document.addEventListener('keydown', eventCancel);
     return () => {
       input.current!.removeEventListener('input', changeInput);
       button.current!.removeEventListener('click', addText2Path);
+      toolSelect.current!.removeEventListener('click', toolSelectClick);
+      document.removeEventListener('keydown', eventCancel);
     };
   }, [inputText]);
 
