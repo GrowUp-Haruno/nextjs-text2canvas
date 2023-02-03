@@ -37,5 +37,16 @@ export const useToolpalettes = () => {
     [selectedTool]
   );
 
+  const text2path_button_click = () => {
+    setSelectedTool('tool-select');
+  };
+
+  useEffect(() => {
+    document.getElementById('text2path-button')?.addEventListener('click', text2path_button_click);
+    return () => {
+      document.getElementById('text2path-button')?.removeEventListener('click', text2path_button_click);
+    };
+  }, []);
+
   return { selectedTool, tools };
 };
